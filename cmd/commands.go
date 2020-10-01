@@ -37,9 +37,12 @@ func createMR(cmd *cobra.Command, args []string, logger zerolog.Logger, out io.S
 		RemoveBranch:        cfg.MR.RemoveSourceBranch,
 	}
 
-	err = core.CreateMR(ctx, params)
+	mr, err := core.CreateMR(ctx, params)
 	if err != nil {
 		_, _ = out.WriteString("Failed to create MR: " + err.Error() + "\n")
 		os.Exit(1)
 	}
+
+	_, _ = out.WriteString("MR created\n")
+	_, _ = out.WriteString(mr.URL + "\n")
 }

@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 	"text/template"
+	"time"
 	"unicode"
 
 	"github.com/rs/zerolog/log"
@@ -40,24 +41,33 @@ type CreateMRParams struct {
 	RemoveBranch        bool
 }
 
-func (c *Core) CreateMR(ctx context.Context, params *CreateMRParams) error {
+type MergeRequest struct {
+	ID        int64     `json:"id"`
+	IID       int64     `json:"iid"`
+	ProjectID int64     `json:"project_id"`
+	CreatedAt time.Time `json:"created_at"`
+	URL       string    `json:"url"`
+}
+
+func (c *Core) CreateMR(ctx context.Context, params *CreateMRParams) (MergeRequest, error) {
+	var mr MergeRequest
 	if params.TargetBranch == "" {
-		return errors.New("target branch is required")
+		return mr, errors.New("target branch is required")
 	}
 
 	br, err := c.git.CurrentBranch()
 	if err != nil {
-		return err
+		return mr, err
 	}
 
 	r, err := c.git.Remote()
 	if err != nil {
-		return err
+		return mr, err
 	}
 
 	p, err := projectFromRemote(r)
 	if err != nil {
-		return err
+		return mr, err
 	}
 
 	ta := getTextArgs(br, p, params)
@@ -71,8 +81,8 @@ func (c *Core) CreateMR(ctx context.Context, params *CreateMRParams) error {
 		Str("description", d).
 		Msg("create mr")
 
-	_, err = c.gitLab.CreateMR(ctx, gitlab.CreateMRRequest{
-		ID:                 p,
+	gmr, err := c.gitLab.CreateMR(ctx, gitlab.CreateMRRequest{
+		Project:            p,
 		SourceBranch:       br,
 		TargetBranch:       params.TargetBranch,
 		Title:              t,
@@ -81,10 +91,16 @@ func (c *Core) CreateMR(ctx context.Context, params *CreateMRParams) error {
 		RemoveSourceBranch: params.RemoveBranch,
 	})
 	if err != nil {
-		return err
+		return mr, err
 	}
 
-	return nil
+	mr.ID = gmr.ID
+	mr.IID = gmr.IID
+	mr.ProjectID = gmr.ProjectID
+	mr.CreatedAt = gmr.CreatedAt
+	mr.URL = gmr.URL
+
+	return mr, nil
 }
 
 func getTextArgs(branch, projectName string, params *CreateMRParams) TextArgs {

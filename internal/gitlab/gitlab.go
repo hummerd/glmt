@@ -1,10 +1,13 @@
 // Package gitlab defines interface for GitLab service
 package gitlab
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 type CreateMRRequest struct {
-	ID                 string `json:"id"`
+	Project            string `json:"id"`
 	SourceBranch       string `json:"source_branch"`
 	TargetBranch       string `json:"target_branch"`
 	Title              string `json:"title"`
@@ -13,6 +16,22 @@ type CreateMRRequest struct {
 	RemoveSourceBranch bool   `json:"remove_source_branch"`
 }
 
+type CreateMRResponse struct {
+	ID        int64     `json:"id"`
+	IID       int64     `json:"iid"`
+	ProjectID int64     `json:"project_id"`
+	CreatedAt time.Time `json:"created_at"`
+	URL       string    `json:"url"`
+}
+
+type GitlabError struct {
+	Message string
+}
+
+func (e GitlabError) Error() string {
+	return e.Message
+}
+
 type GitLab interface {
-	CreateMR(ctx context.Context, req CreateMRRequest) (int64, error)
+	CreateMR(ctx context.Context, req CreateMRRequest) (CreateMRResponse, error)
 }

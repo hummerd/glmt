@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/rs/zerolog/log"
 	"gitlab.com/glmt/glmt/internal/gitlab"
@@ -29,17 +28,19 @@ type HTTPGitLab struct {
 	host  string
 }
 
-func (gl *HTTPGitLab) CreateMR(ctx context.Context, req gitlab.CreateMRRequest) (int64, error) {
+func (gl *HTTPGitLab) CreateMR(ctx context.Context, req gitlab.CreateMRRequest) (gitlab.CreateMRResponse, error) {
+	var resp gitlab.CreateMRResponse
+
 	data := &bytes.Buffer{}
 	err := json.NewEncoder(data).Encode(req)
 	if err != nil {
-		return 0, fmt.Errorf("can not encode request to gitlab: %w", err)
+		return resp, fmt.Errorf("can not encode request to gitlab: %w", err)
 	}
 
-	methodURL := fmt.Sprintf("%s/api/v4/projects/%s/merge_requests", gl.host, url.PathEscape(req.ID))
+	methodURL := fmt.Sprintf("%s/api/v4/projects/%s/merge_requests", gl.host, url.PathEscape(req.Project))
 	hReq, err := http.NewRequestWithContext(ctx, http.MethodPost, methodURL, data)
 	if err != nil {
-		return 0, fmt.Errorf("can not create request for gitlab's create mr: %w", err)
+		return resp, fmt.Errorf("can not create request for gitlab's create mr: %w", err)
 	}
 
 	hReq.Header.Set("Content-Type", "application/json")
@@ -48,7 +49,7 @@ func (gl *HTTPGitLab) CreateMR(ctx context.Context, req gitlab.CreateMRRequest) 
 	buff := &bytes.Buffer{}
 	err = json.NewEncoder(buff).Encode(req)
 	if err != nil {
-		return 0, fmt.Errorf("can not create request payload for gitlab's create mr: %w", err)
+		return resp, fmt.Errorf("can not create request payload for gitlab's create mr: %w", err)
 	}
 
 	hReq.Body = ioutil.NopCloser(buff)
@@ -61,27 +62,34 @@ func (gl *HTTPGitLab) CreateMR(ctx context.Context, req gitlab.CreateMRRequest) 
 
 	hResp, err := gl.c.Do(hReq)
 	if err != nil {
-		return 0, fmt.Errorf("can not create mr in gitlab: %w", err)
+		return resp, fmt.Errorf("can not create mr in gitlab: %w", err)
 	}
-
-	type tResp struct {
-		ID        int64     `json:"id"`
-		IID       int64     `json:"iid"`
-		ProjectID int64     `json:"project_id"`
-		CreatedAt time.Time `json:"created_at"`
-	}
-	var resp tResp
-
-	br, _ := ioutil.ReadAll(hResp.Body)
-	fmt.Println(string(br))
 
 	defer hResp.Body.Close()
-	err = json.NewDecoder(hResp.Body).Decode(&resp)
-	if err != nil {
-		return 0, fmt.Errorf("can not decode response from gitlab's create MR: %w", err)
+
+	if hResp.StatusCode != http.StatusCreated {
+		// TODO: implement typed error
+		// type glerr  struct {
+		// 	Message map[string]interface{}
+		// 	Error string
+		// }
+		// err = json.NewDecoder(hResp.Body).Decode(&gerr)
+
+		errm, err := ioutil.ReadAll(hResp.Body)
+		if err != nil {
+			return resp, fmt.Errorf("can not decode error from gitlab's create MR: %w", err)
+		}
+		return resp, gitlab.GitlabError{Message: string(errm)}
 	}
 
-	return resp.ID, nil
+	err = json.NewDecoder(hResp.Body).Decode(&resp)
+	if err != nil {
+		return resp, fmt.Errorf("can not decode response from gitlab's create MR: %w", err)
+	}
+
+	resp.URL = fmt.Sprintf("%s/%s/-/merge_requests/%d", gl.host, req.Project, resp.IID)
+
+	return resp, nil
 }
 
 func hideToken(s string) string {
