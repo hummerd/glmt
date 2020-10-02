@@ -28,7 +28,7 @@ func createMR(cmd *cobra.Command, args []string, logger zerolog.Logger, out io.S
 		os.Exit(1)
 	}
 
-	params := &glmt.CreateMRParams{
+	params := glmt.CreateMRParams{
 		TargetBranch:        cfg.MR.TargetBranch,
 		BranchRegexp:        br,
 		TitleTemplate:       cfg.MR.Title,

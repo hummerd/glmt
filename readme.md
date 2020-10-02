@@ -10,6 +10,8 @@ GitLab Merge Tool (glmt) is CLI tool for making merge requests in GitLab. It's d
 * View list of MR's waiting for your approval
 
 ## Usage
+
+Common
 ```
 Usage:
   glmt [command]

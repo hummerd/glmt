@@ -2,15 +2,12 @@
 package glmt
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"net/url"
 	"regexp"
 	"strings"
-	"text/template"
 	"time"
-	"unicode"
 
 	"github.com/rs/zerolog/log"
 	"gitlab.com/glmt/glmt/internal/git"
@@ -49,7 +46,7 @@ type MergeRequest struct {
 	URL       string    `json:"url"`
 }
 
-func (c *Core) CreateMR(ctx context.Context, params *CreateMRParams) (MergeRequest, error) {
+func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeRequest, error) {
 	var mr MergeRequest
 	if params.TargetBranch == "" {
 		return mr, errors.New("target branch is required")
@@ -103,113 +100,27 @@ func (c *Core) CreateMR(ctx context.Context, params *CreateMRParams) (MergeReque
 	return mr, nil
 }
 
-func getTextArgs(branch, projectName string, params *CreateMRParams) TextArgs {
-	ta := TextArgs{
-		ProjectName:      projectName,
-		BranchName:       branch,
-		TargetBranchName: params.TargetBranch,
-	}
-
-	if params.BranchRegexp == nil {
-		return ta
-	}
-
-	subNames := params.BranchRegexp.SubexpNames()
-	if len(subNames) <= 1 {
-		return ta
-	}
-
-	match := params.BranchRegexp.FindStringSubmatch(branch)
-	if len(match) == 0 {
-		return ta
-	}
-
-	for i := 1; i < len(subNames); i++ {
-		switch subNames[i] {
-		case "BranchDescription":
-			ta.BranchDescription = match[i]
-
-		case "Task":
-			ta.Task = match[i]
-
-		case "TaskType":
-			ta.TaskType = match[i]
-		}
-	}
-
-	return ta
-}
-
-type TextArgs struct {
-	BranchName        string
-	TargetBranchName  string
-	BranchDescription string
-	Task              string
-	TaskType          string
-	ProjectName       string
-}
-
-func createText(part, format string, args TextArgs) string {
-	if format == "" {
-		return args.BranchName
-	}
-
-	funcMap := template.FuncMap{
-		"humanizeText": humanizeText,
-	}
-
-	tmpl, _ := template.New(part).Funcs(funcMap).Parse(format)
-
-	buff := &bytes.Buffer{}
-	_ = tmpl.Execute(buff, args)
-
-	return buff.String()
-}
-
-func isSeparator(r rune) bool {
-	switch {
-	case r == '_':
-		return true
-	case r == '-':
-		return true
-	}
-
-	return false
-}
-
-func humanizeText(s string) string {
-	first := true
-	return strings.Map(
-		func(r rune) rune {
-			if isSeparator(r) {
-				return ' '
-			}
-
-			if first && unicode.IsLetter(r) {
-				first = false
-				return unicode.ToTitle(r)
-			}
-			return r
-		},
-		s)
-}
-
 func projectFromRemote(rem string) (string, error) {
+	var p string
 	if matchesScheme(rem) {
 		url, err := url.Parse(rem)
 		if err != nil {
 			return "", err
 		}
 
-		return url.Path, nil
-	}
-
-	if matchesScpLike(rem) {
-		p, err := findScpLikePath(rem)
+		p = strings.TrimLeft(url.Path, "/")
+	} else if matchesScpLike(rem) {
+		var err error
+		p, err = findScpLikePath(rem)
 		if err != nil {
 			return "", err
 		}
+	}
 
+	if p != "" {
+		if strings.HasSuffix(p, ".git") {
+			p = p[:len(p)-4]
+		}
 		return p, nil
 	}
 
@@ -218,7 +129,7 @@ func projectFromRemote(rem string) (string, error) {
 
 var (
 	isSchemeRegExp   = regexp.MustCompile(`^[^:]+://`)
-	scpLikeURLRegExp = regexp.MustCompile(`^(?:(?P<user>[^@]+)@)?(?P<host>[^:\s]+):(?:(?P<port>[0-9]{1,5})(?:\/|:))?(?P<path>[^\\].*\/[^\\].*)\.git$`)
+	scpLikeURLRegExp = regexp.MustCompile(`^(?:(?P<user>[^@]+)@)?(?P<host>[^:\s]+):(?:(?P<port>[0-9]{1,5})(?:\/|:))?(?P<path>[^\\].*\/[^\\].*)$`)
 )
 
 /// findScpLikePath returns the path of the given SCP-like URL.
