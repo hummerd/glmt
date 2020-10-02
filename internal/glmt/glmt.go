@@ -69,8 +69,17 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 
 	ta := getTextArgs(br, p, params)
 
-	t := createText("title", params.TitleTemplate, ta)
-	d := createText("description", params.DescriptionTemplate, ta)
+	var t string
+	if params.TitleTemplate != "" {
+		t = createText("title", params.TitleTemplate, ta)
+	}
+
+	var d string
+	if params.DescriptionTemplate != "" {
+		d = createText("description", params.DescriptionTemplate, ta)
+	} else {
+		d = "Merge " + br + " into " + params.TargetBranch
+	}
 
 	log.Ctx(ctx).Debug().
 		Interface("context", ta).

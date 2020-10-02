@@ -46,11 +46,13 @@ func getTextArgs(branch, projectName string, params CreateMRParams) map[string]s
 
 func createText(part, format string, args map[string]string) string {
 	if format == "" {
-		return args[TmpVarBranchName]
+		return ""
 	}
 
 	funcMap := template.FuncMap{
 		"humanizeText": humanizeText,
+		"upper":        strings.ToUpper,
+		"lower":        strings.ToLower,
 	}
 
 	tmpl, _ := template.New(part).Funcs(funcMap).Parse(format)
