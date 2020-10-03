@@ -22,7 +22,10 @@ Available Commands:
 
 Flags:
   -c, --config string   path to config
+  -y, --dryrun          dry run true only shows request to gitlab, but do not sends them
   -h, --help            help for glmt
+  -a, --host string     gitlab host
+  -l, --log string      log level (default "info")
   -k, --token string    gitlab API token
 
 Use "glmt [command] --help" for more information about a command.
