@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/rs/zerolog/log"
 	"gitlab.com/glmt/glmt/internal/gitlab"
@@ -16,7 +17,9 @@ import (
 
 func NewHTTPGitLab(token, host string) *HTTPGitLab {
 	return &HTTPGitLab{
-		c:     &http.Client{},
+		c: &http.Client{
+			Timeout: time.Second * 30,
+		},
 		token: token,
 		host:  host,
 	}
@@ -31,28 +34,10 @@ type HTTPGitLab struct {
 func (gl *HTTPGitLab) CreateMR(ctx context.Context, req gitlab.CreateMRRequest) (gitlab.CreateMRResponse, error) {
 	var resp gitlab.CreateMRResponse
 
-	data := &bytes.Buffer{}
-	err := json.NewEncoder(data).Encode(req)
+	hReq, err := createHTTPRequest(ctx, gl.token, gl.host, req)
 	if err != nil {
-		return resp, fmt.Errorf("can not encode request to gitlab: %w", err)
+		return resp, err
 	}
-
-	methodURL := fmt.Sprintf("%s/api/v4/projects/%s/merge_requests", gl.host, url.PathEscape(req.Project))
-	hReq, err := http.NewRequestWithContext(ctx, http.MethodPost, methodURL, data)
-	if err != nil {
-		return resp, fmt.Errorf("can not create request for gitlab's create mr: %w", err)
-	}
-
-	hReq.Header.Set("Content-Type", "application/json")
-	hReq.Header.Set("Private-Token", gl.token)
-
-	buff := &bytes.Buffer{}
-	err = json.NewEncoder(buff).Encode(req)
-	if err != nil {
-		return resp, fmt.Errorf("can not create request payload for gitlab's create mr: %w", err)
-	}
-
-	hReq.Body = ioutil.NopCloser(buff)
 
 	log.Ctx(ctx).Debug().
 		Stringer("url", hReq.URL).
@@ -87,19 +72,32 @@ func (gl *HTTPGitLab) CreateMR(ctx context.Context, req gitlab.CreateMRRequest) 
 		return resp, fmt.Errorf("can not decode response from gitlab's create MR: %w", err)
 	}
 
-	resp.URL = fmt.Sprintf("%s/%s/-/merge_requests/%d", gl.host, req.Project, resp.IID)
+	resp.URL = createMRURL(gl.host, req.Project, resp.IID)
 
 	return resp, nil
 }
 
-func hideToken(s string) string {
-	if s == "" {
-		return s
+func createHTTPRequest(ctx context.Context, token, host string, req gitlab.CreateMRRequest) (*http.Request, error) {
+	data := &bytes.Buffer{}
+	enc := json.NewEncoder(data)
+	enc.SetIndent("", "  ")
+	err := enc.Encode(req)
+	if err != nil {
+		return nil, fmt.Errorf("can not encode request to gitlab: %w", err)
 	}
 
-	if len(s) < 3 {
-		return s
+	methodURL := fmt.Sprintf("%s/api/v4/projects/%s/merge_requests", host, url.PathEscape(req.Project))
+	hReq, err := http.NewRequestWithContext(ctx, http.MethodPost, methodURL, data)
+	if err != nil {
+		return nil, fmt.Errorf("can not create request for gitlab's create mr: %w", err)
 	}
 
-	return s[:3] + "..."
+	hReq.Header.Set("Content-Type", "application/json")
+	hReq.Header.Set("Private-Token", token)
+
+	return hReq, nil
+}
+
+func createMRURL(host, project string, iid int64) string {
+	return fmt.Sprintf("%s/%s/-/merge_requests/%d", host, project, iid)
 }

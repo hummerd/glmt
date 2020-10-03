@@ -3,11 +3,13 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
 	"gitlab.com/glmt/glmt/internal/config"
 	giti "gitlab.com/glmt/glmt/internal/git/impl"
+	"gitlab.com/glmt/glmt/internal/gitlab"
 	gitlabi "gitlab.com/glmt/glmt/internal/gitlab/impl"
 	"gitlab.com/glmt/glmt/internal/glmt"
 
@@ -17,20 +19,22 @@ import (
 )
 
 func main() {
-	logger := zerolog.New(os.Stdout)
+	logger := zerolog.New(os.Stdout).Level(zerolog.InfoLevel)
 	out := os.Stdout
 
 	var rootCmd = &cobra.Command{Use: "glmt"}
 	rootCmd.PersistentFlags().StringP("config", "c", "", "path to config")
 	rootCmd.PersistentFlags().StringP("token", "k", "", "gitlab API token")
 	rootCmd.PersistentFlags().StringP("host", "a", "", "gitlab host")
+	rootCmd.PersistentFlags().BoolP("dryrun", "y", false, "dry run true only shows request to gitlab, but do not sends them")
+	rootCmd.PersistentFlags().StringP("log", "l", "info", "log level")
 
 	var cmdCreate = &cobra.Command{
 		Use:   "create",
 		Short: "Create merge request",
 		Long:  `...`,
 		Run: func(cmd *cobra.Command, args []string) {
-			createMR(cmd, args, logger, out)
+			createMR(cmd, logger, out)
 		},
 	}
 	createFlags := cmdCreate.Flags()
@@ -40,6 +44,15 @@ func main() {
 
 	rootCmd.AddCommand(cmdCreate)
 	_ = rootCmd.Execute()
+}
+
+func parseLogLevel(flags *pflag.FlagSet) (zerolog.Level, error) {
+	log, err := flags.GetString("log")
+	if err != nil {
+		return zerolog.NoLevel, err
+	}
+
+	return zerolog.ParseLevel(log)
 }
 
 func finalConfig(flags *pflag.FlagSet) (*config.Config, error) {
@@ -135,9 +148,15 @@ func applyFlags(flags *pflag.FlagSet, cfg *config.Config) error {
 	return nil
 }
 
-func createCore(cfg *config.Config) *glmt.Core {
+func createCore(dryRun bool, out io.StringWriter, cfg *config.GitLab) *glmt.Core {
 	git, _ := giti.NewLocalGit()
-	gitlab := gitlabi.NewHTTPGitLab(cfg.GitLab.Token, cfg.GitLab.URL)
+
+	var gitlab gitlab.GitLab
+	if dryRun {
+		gitlab = gitlabi.NewDryRunGitLab(out, cfg.Token, cfg.URL)
+	} else {
+		gitlab = gitlabi.NewHTTPGitLab(cfg.Token, cfg.URL)
+	}
 
 	return glmt.NewGLMT(git, gitlab)
 }

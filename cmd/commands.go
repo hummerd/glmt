@@ -12,15 +12,29 @@ import (
 	"gitlab.com/glmt/glmt/internal/glmt"
 )
 
-func createMR(cmd *cobra.Command, args []string, logger zerolog.Logger, out io.StringWriter) {
-	cfg, err := finalConfig(cmd.Flags())
+func createMR(cmd *cobra.Command, logger zerolog.Logger, out io.StringWriter) {
+	flags := cmd.Flags()
+	cfg, err := finalConfig(flags)
 	if err != nil {
 		panic(err)
 	}
 
+	ll, err := parseLogLevel(flags)
+	if err != nil {
+		_, _ = out.WriteString("Failed to parse log level: " + err.Error() + "\n")
+		os.Exit(1)
+	}
+
+	logger = logger.Level(ll)
 	ctx := logger.WithContext(context.Background())
 
-	core := createCore(cfg)
+	dryRun, err := flags.GetBool("dryrun")
+	if err != nil {
+		_, _ = out.WriteString("Failed to parse dryrun: " + err.Error() + "\n")
+		os.Exit(1)
+	}
+
+	core := createCore(dryRun, out, &cfg.GitLab)
 
 	br, err := regexp.Compile(cfg.MR.BranchRegexp)
 	if err != nil {

@@ -33,12 +33,12 @@ func getTextArgs(branch, projectName string, params CreateMRParams) map[string]s
 	}
 
 	match := params.BranchRegexp.FindStringSubmatch(branch)
-	if len(match) == 0 {
-		return r
-	}
-
 	for i := 1; i < len(subNames); i++ {
-		r[subNames[i]] = match[i]
+		m := ""
+		if len(match) > i {
+			m = match[i]
+		}
+		r[subNames[i]] = m
 	}
 
 	return r
