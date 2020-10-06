@@ -58,7 +58,7 @@ Config example:
 {
   "gitlab": {
   	"url": "https://yourgitlab.com",
-  	"token": "XXX"
+  	"token": "XXX" // You can get one on /profile/personal_access_tokens page
   },
   "mr": {
     "branch_regexp": "(?P<TaskType>.*)/(?P<Task>.*)/(?P<BranchDescription>.*)",

@@ -24,7 +24,7 @@ func main() {
 
 	var rootCmd = &cobra.Command{Use: "glmt"}
 	rootCmd.PersistentFlags().StringP("config", "c", "", "path to config")
-	rootCmd.PersistentFlags().StringP("token", "k", "", "gitlab API token")
+	rootCmd.PersistentFlags().StringP("token", "k", "", "gitlab API token (get it on /profile/personal_access_tokens page)")
 	rootCmd.PersistentFlags().StringP("host", "a", "", "gitlab host")
 	rootCmd.PersistentFlags().BoolP("dryrun", "y", false, "dry run true only shows request to gitlab, but do not sends them")
 	rootCmd.PersistentFlags().StringP("log", "l", "info", "log level")
