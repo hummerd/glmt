@@ -64,7 +64,9 @@ Config example:
     "branch_regexp": "(?P<TaskType>.*)/(?P<Task>.*)/(?P<BranchDescription>.*)",
     "title": "{{.Task}} {{humanizeText .BranchDescription}}",
     "description": "Merge feature {{.Task}} \"{{humanizeText .BranchDescription}}\" into {{.TargetBranchName}}",
-    "target_branch": "develop"
+    "target_branch": "develop",
+    "squash": true,
+    "remove_source_branch": true
   }
 
 ```
