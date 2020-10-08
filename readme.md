@@ -54,7 +54,7 @@ If you don't want to specify flags every time you can specify it in config file.
 Or you can specify path to config file with `-c` flag.
 
 Config example:
-```json
+```jsonc
 {
   "gitlab": {
   	"url": "https://yourgitlab.com",
