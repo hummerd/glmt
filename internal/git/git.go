@@ -1,7 +1,2 @@
-// Package git defines interface for git service
+// Package git implements glmt.Git
 package git
-
-type Git interface {
-	Remote() (string, error)
-	CurrentBranch() (string, error)
-}

@@ -10,23 +10,29 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"gitlab.com/glmt/glmt/internal/git"
 	"gitlab.com/glmt/glmt/internal/gitlab"
 )
 
+var (
+	ErrNotification = errors.New("notification error")
+)
+
 func NewGLMT(
-	git git.Git,
+	git Git,
 	gitLab gitlab.GitLab,
+	notifier Notifier,
 ) *Core {
 	return &Core{
-		git:    git,
-		gitLab: gitLab,
+		git:      git,
+		gitLab:   gitLab,
+		notifier: notifier,
 	}
 }
 
 type Core struct {
-	git    git.Git
-	gitLab gitlab.GitLab
+	git      Git
+	gitLab   gitlab.GitLab
+	notifier Notifier
 }
 
 type CreateMRParams struct {
@@ -106,7 +112,14 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 	mr.CreatedAt = gmr.CreatedAt
 	mr.URL = gmr.URL
 
-	return mr, nil
+	if c.notifier != nil {
+		err = c.notifier.Send(ctx, mr.URL)
+		if err != nil {
+			err = NewNestedError(ErrNotification, err)
+		}
+	}
+
+	return mr, err
 }
 
 func projectFromRemote(rem string) (string, error) {

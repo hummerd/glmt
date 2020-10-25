@@ -1,5 +1,4 @@
-// Package impl implements git service
-package impl
+package git
 
 import (
 	"fmt"

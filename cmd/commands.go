@@ -34,7 +34,11 @@ func createMR(cmd *cobra.Command, logger zerolog.Logger, out io.StringWriter) {
 		os.Exit(1)
 	}
 
-	core := createCore(dryRun, out, &cfg.GitLab)
+	core, err := createCore(dryRun, out, &cfg.GitLab, &cfg.Notifier)
+	if err != nil {
+		_, _ = out.WriteString("Failed to start glmt: " + err.Error() + "\n")
+		os.Exit(1)
+	}
 
 	br, err := regexp.Compile(cfg.MR.BranchRegexp)
 	if err != nil {

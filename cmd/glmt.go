@@ -8,10 +8,11 @@ import (
 	"path/filepath"
 
 	"gitlab.com/glmt/glmt/internal/config"
-	giti "gitlab.com/glmt/glmt/internal/git/impl"
+	"gitlab.com/glmt/glmt/internal/git"
 	"gitlab.com/glmt/glmt/internal/gitlab"
 	gitlabi "gitlab.com/glmt/glmt/internal/gitlab/impl"
 	"gitlab.com/glmt/glmt/internal/glmt"
+	"gitlab.com/glmt/glmt/internal/notifier"
 
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
@@ -148,15 +149,23 @@ func applyFlags(flags *pflag.FlagSet, cfg *config.Config) error {
 	return nil
 }
 
-func createCore(dryRun bool, out io.StringWriter, cfg *config.GitLab) *glmt.Core {
-	git, _ := giti.NewLocalGit()
+func createCore(dryRun bool, out io.StringWriter, gitCfg *config.GitLab, nfyCfg *config.Notifier) (*glmt.Core, error) {
+	git, err := git.NewLocalGit()
+	if err != nil {
+		return nil, err
+	}
 
 	var gitlab gitlab.GitLab
 	if dryRun {
-		gitlab = gitlabi.NewDryRunGitLab(out, cfg.Token, cfg.URL)
+		gitlab = gitlabi.NewDryRunGitLab(out, gitCfg.Token, gitCfg.URL)
 	} else {
-		gitlab = gitlabi.NewHTTPGitLab(cfg.Token, cfg.URL)
+		gitlab = gitlabi.NewHTTPGitLab(gitCfg.Token, gitCfg.URL)
 	}
 
-	return glmt.NewGLMT(git, gitlab)
+	var n glmt.Notifier
+	if nfyCfg.SlackWebHook.URL != "" {
+		n = notifier.NewSlackWebHookNotifier(nfyCfg.SlackWebHook.URL)
+	}
+
+	return glmt.NewGLMT(git, gitlab, n), nil
 }

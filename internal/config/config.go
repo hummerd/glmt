@@ -8,8 +8,9 @@ import (
 )
 
 type Config struct {
-	GitLab GitLab `json:"gitlab"`
-	MR     MR     `json:"mr"`
+	GitLab   GitLab   `json:"gitlab"`
+	MR       MR       `json:"mr"`
+	Notifier Notifier `json:"notifier"`
 }
 
 type GitLab struct {
@@ -24,6 +25,14 @@ type MR struct {
 	TargetBranch       string `json:"target_branch"`
 	Squash             bool   `json:"squash"`
 	RemoveSourceBranch bool   `json:"remove_source_branch"`
+}
+
+type Notifier struct {
+	SlackWebHook SlackWebHook `json:"slack_web_hook"`
+}
+
+type SlackWebHook struct {
+	URL string `json:"url"`
 }
 
 func LoadConfig(path string) (*Config, error) {
