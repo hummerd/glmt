@@ -1,4 +1,4 @@
-# WIP: GitLab Merge Tool
+# GitLab Merge Tool
 
 ## Overview
 GitLab Merge Tool (glmt) is CLI tool for making merge requests in GitLab. It's designed to be easy to use but still flexible to cover many use cases for different teams.
@@ -7,9 +7,11 @@ GitLab Merge Tool (glmt) is CLI tool for making merge requests in GitLab. It's d
 * Creating MR form command line
 * MR title and description with support of templates
 * Team mentioning
-* View list of MR's waiting for your approval
+* View list of MR's waiting for your approval (coming soon)
 
 ## Usage
+
+Want to crate Merge Request from command line? Just run `glmt create` from your project's directory. GLMT will create MR from current git brunch to specified branch.
 
 Common
 ```
@@ -37,10 +39,11 @@ Usage:
   glmt create [flags]
 
 Flags:
-  -d, --description string   Merge Request's description (template variables can be used in description)
-  -h, --help                 help for create
-  -b, --target string        Merge Request's target branch (default "master")
-  -t, --title string         Merge Request's title (template variables can be used in title)
+  -d, --description string            Merge Request's description (template variables can be used in description)
+  -h, --help                          help for create
+  -n, --notification_message string   Additional notification message
+  -b, --target string                 Merge Request's target branch (default "master")
+  -t, --title string                  Merge Request's title (template variables can be used in title)
 ```
 
 ## Config
@@ -56,25 +59,37 @@ Or you can specify path to config file with `-c` flag.
 Config example:
 ```jsonc
 {
-  "gitlab": {
+  "gitlab": { // GitLab parameters
   	"url": "https://yourgitlab.com",
-  	"token": "XXX" // You can get one on /profile/personal_access_tokens page
+  	"token": "XXX" // You can get one on https://YOURGITLAB.com/profile/personal_access_tokens page
   },
-  "mr": {
+  "mr": { // Merge Request parameters
     "branch_regexp": "(?P<TaskType>.*)/(?P<Task>.*)/(?P<BranchDescription>.*)",
-    "title": "{{.Task}} {{humanizeText .BranchDescription}}",
-    "description": "Merge feature {{.Task}} \"{{humanizeText .BranchDescription}}\" into {{.TargetBranchName}}",
+    "title": "{{.Task}} {{humanizeText .BranchDescription}}", // can be template
+    "description": "Merge feature {{.Task}} \"{{humanizeText .BranchDescription}}\" into {{.TargetBranchName}}", // can be template
     "target_branch": "develop",
     "squash": true,
     "remove_source_branch": true
+  },
+  "notifier": { // Notification parameters
+    "slack_web_hook": {
+  	  "url": "https://hooks.slack.com/services/XXX/XXX/XXX", // Learn how to get in https://api.slack.com/legacy/custom-integrations/messaging/webhooks
+      "message_template": "<!here>\n{{.Description}}\n{{.MergeRequestURL}}" // can be template
+    }
   }
-
 ```
 
-Title and Description can be static string or it can be template. Templates made as https://golang.org/pkg/text/template/. In template you can specify predefined variables:
+## Templating
+
+Title and Description and other fields can be static string or it can be template. Templates made as https://golang.org/pkg/text/template/. In template you can specify predefined variables:
 * ProjectName - project name (path extracted from git remote)
 * BranchName - current branch name
 * TargetBranchName - target branch name (from config or flag)
+
+Variables available for notification (previous variables are also available):
+ * Title - Merge request title
+ * Description - Merge request description
+ * MergeRequestURL - Merge request URL
 
 Additionally you can use any regexp group name from `branch_regexp` in description of title templates. If `title` not specified, current branch name will be used as title. If `description` not specified template "`Merge {{.BranchName }}" into {{.TargetBranchName}}`" will be used for description.
 

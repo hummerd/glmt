@@ -46,6 +46,12 @@ func createMR(cmd *cobra.Command, logger zerolog.Logger, out io.StringWriter) {
 		os.Exit(1)
 	}
 
+	na, err := flags.GetString("notification_message")
+	if err != nil {
+		_, _ = out.WriteString("Failed to parse notification_message: " + err.Error() + "\n")
+		os.Exit(1)
+	}
+
 	params := glmt.CreateMRParams{
 		TargetBranch:        cfg.MR.TargetBranch,
 		BranchRegexp:        br,
@@ -53,6 +59,7 @@ func createMR(cmd *cobra.Command, logger zerolog.Logger, out io.StringWriter) {
 		DescriptionTemplate: cfg.MR.Description,
 		Squash:              cfg.MR.Squash,
 		RemoveBranch:        cfg.MR.RemoveSourceBranch,
+		NotificationMessage: na,
 	}
 
 	mr, err := core.CreateMR(ctx, params)

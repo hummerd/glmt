@@ -32,7 +32,8 @@ type Notifier struct {
 }
 
 type SlackWebHook struct {
-	URL string `json:"url"`
+	URL             string `json:"url"`
+	MessageTemplate string `json:"message_template"`
 }
 
 func LoadConfig(path string) (*Config, error) {

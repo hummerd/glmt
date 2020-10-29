@@ -11,6 +11,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"gitlab.com/glmt/glmt/internal/gitlab"
+	"gitlab.com/glmt/glmt/internal/templating"
 )
 
 var (
@@ -42,6 +43,7 @@ type CreateMRParams struct {
 	DescriptionTemplate string
 	Squash              bool
 	RemoveBranch        bool
+	NotificationMessage string
 }
 
 type MergeRequest struct {
@@ -77,12 +79,12 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 
 	var t string
 	if params.TitleTemplate != "" {
-		t = createText("title", params.TitleTemplate, ta)
+		t = templating.CreateText("title", params.TitleTemplate, ta)
 	}
 
 	var d string
 	if params.DescriptionTemplate != "" {
-		d = createText("description", params.DescriptionTemplate, ta)
+		d = templating.CreateText("description", params.DescriptionTemplate, ta)
 	} else {
 		d = "Merge " + br + " into " + params.TargetBranch
 	}
@@ -113,7 +115,11 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 	mr.URL = gmr.URL
 
 	if c.notifier != nil {
-		err = c.notifier.Send(ctx, "<!here>\n"+d+"\n"+mr.URL)
+		ta[TmpVarTitle] = t
+		ta[TmpVarDescription] = d
+		ta[TmpVarMRURL] = gmr.URL
+
+		err = c.notifier.Send(ctx, ta, params.NotificationMessage)
 		if err != nil {
 			err = NewNestedError(ErrNotification, err)
 		}

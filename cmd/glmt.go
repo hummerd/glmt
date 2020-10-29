@@ -42,6 +42,7 @@ func main() {
 	createFlags.StringP("target", "b", "master", "Merge Request's target branch")
 	createFlags.StringP("title", "t", "", "Merge Request's title (template variables can be used in title)")
 	createFlags.StringP("description", "d", "", "Merge Request's description (template variables can be used in description)")
+	createFlags.StringP("notification_message", "n", "", "Additional notification message")
 
 	rootCmd.AddCommand(cmdCreate)
 	_ = rootCmd.Execute()
@@ -164,7 +165,7 @@ func createCore(dryRun bool, out io.StringWriter, gitCfg *config.GitLab, nfyCfg 
 
 	var n glmt.Notifier
 	if nfyCfg.SlackWebHook.URL != "" {
-		n = notifier.NewSlackWebHookNotifier(nfyCfg.SlackWebHook.URL)
+		n = notifier.NewSlackWebHookNotifier(nfyCfg.SlackWebHook.URL, nfyCfg.SlackWebHook.MessageTemplate)
 	}
 
 	return glmt.NewGLMT(git, gitlab, n), nil
