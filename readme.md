@@ -17,7 +17,7 @@ Want to crate Merge Request from command line? Just run `glmt create` from your 
 
 If you have GO installed run:
 ```
-go get -u gitlab.com/gitlab-merge-tool/glmt/cmd
+go get gitlab.com/gitlab-merge-tool/glmt/cmd/glmt
 ```
 
 ## Help
