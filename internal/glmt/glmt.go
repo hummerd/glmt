@@ -113,7 +113,7 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 	mr.URL = gmr.URL
 
 	if c.notifier != nil {
-		err = c.notifier.Send(ctx, mr.URL)
+		err = c.notifier.Send(ctx, "<!here>\n"+d+"\n"+mr.URL)
 		if err != nil {
 			err = NewNestedError(ErrNotification, err)
 		}
