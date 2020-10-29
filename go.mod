@@ -1,4 +1,4 @@
-module gitlab.com/glmt/glmt
+module gitlab.com/gitlab-merge-tool/glmt
 
 go 1.15
 

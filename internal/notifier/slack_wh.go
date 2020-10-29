@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/slack-go/slack"
-	"gitlab.com/glmt/glmt/internal/templating"
+	"gitlab.com/gitlab-merge-tool/glmt/internal/templating"
 )
 
 func NewSlackWebHookNotifier(url, messageTemplate string) *SlackWebHookNotifier {

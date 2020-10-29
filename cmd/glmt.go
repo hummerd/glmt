@@ -7,12 +7,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"gitlab.com/glmt/glmt/internal/config"
-	"gitlab.com/glmt/glmt/internal/git"
-	"gitlab.com/glmt/glmt/internal/gitlab"
-	gitlabi "gitlab.com/glmt/glmt/internal/gitlab/impl"
-	"gitlab.com/glmt/glmt/internal/glmt"
-	"gitlab.com/glmt/glmt/internal/notifier"
+	"gitlab.com/gitlab-merge-tool/glmt/internal/config"
+	"gitlab.com/gitlab-merge-tool/glmt/internal/git"
+	"gitlab.com/gitlab-merge-tool/glmt/internal/gitlab"
+	gitlabi "gitlab.com/gitlab-merge-tool/glmt/internal/gitlab/impl"
+	"gitlab.com/gitlab-merge-tool/glmt/internal/glmt"
+	"gitlab.com/gitlab-merge-tool/glmt/internal/notifier"
 
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"

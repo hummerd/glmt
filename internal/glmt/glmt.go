@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"gitlab.com/glmt/glmt/internal/gitlab"
-	"gitlab.com/glmt/glmt/internal/templating"
+	"gitlab.com/gitlab-merge-tool/glmt/internal/gitlab"
+	"gitlab.com/gitlab-merge-tool/glmt/internal/templating"
 )
 
 var (

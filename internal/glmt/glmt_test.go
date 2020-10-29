@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"testing"
 
-	"gitlab.com/glmt/glmt/internal/gitlab"
+	"gitlab.com/gitlab-merge-tool/glmt/internal/gitlab"
 )
 
 func TestRemoteParse(t *testing.T) {

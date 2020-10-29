@@ -9,7 +9,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 
-	"gitlab.com/glmt/glmt/internal/glmt"
+	"gitlab.com/gitlab-merge-tool/glmt/internal/glmt"
 )
 
 func createMR(cmd *cobra.Command, logger zerolog.Logger, out io.StringWriter) {

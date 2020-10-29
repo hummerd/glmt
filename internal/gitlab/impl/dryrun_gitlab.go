@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"gitlab.com/glmt/glmt/internal/gitlab"
+	"gitlab.com/gitlab-merge-tool/glmt/internal/gitlab"
 )
 
 func NewDryRunGitLab(out io.StringWriter, token, host string) *DryRunGitLab {
