@@ -2,7 +2,7 @@
 default: build
 
 build:
-	go build -o glmt ./cmd
+	go build ./cmd/glmt
 
 test:
 	go test -race ./...

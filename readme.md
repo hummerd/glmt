@@ -13,6 +13,15 @@ GitLab Merge Tool (glmt) is CLI tool for making merge requests in GitLab. It's d
 
 Want to crate Merge Request from command line? Just run `glmt create` from your project's directory. GLMT will create MR from current git brunch to specified branch.
 
+## Installation
+
+If you have GO installed run:
+```
+go get -u gitlab.com/gitlab-merge-tool/glmt/cmd
+```
+
+## Help
+
 Common
 ```
 Usage:
