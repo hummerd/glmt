@@ -8,9 +8,17 @@ import (
 )
 
 type Config struct {
-	GitLab   GitLab   `json:"gitlab"`
-	MR       MR       `json:"mr"`
-	Notifier Notifier `json:"notifier"`
+	GitLab    GitLab    `json:"gitlab"`
+	MR        MR        `json:"mr"`
+	Notifier  Notifier  `json:"notifier"`
+	Mentioner Mentioner `json:"mentioner"`
+}
+
+type Mentioner struct {
+	Enabled          bool   `json:"enabled"`
+	DataSource       string `json:"data_source"`
+	MentionsCount    int    `json:"count"`
+	CurrentMemberUID string `json:"member_uid"`
 }
 
 type GitLab struct {

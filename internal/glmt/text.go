@@ -1,5 +1,11 @@
 package glmt
 
+import (
+	"strings"
+
+	"gitlab.com/gitlab-merge-tool/glmt/internal/mentioner"
+)
+
 const (
 	TmpVarProjectName      = "ProjectName"
 	TmpVarBranchName       = "BranchName"
@@ -7,16 +13,23 @@ const (
 	TmpVarTitle            = "Title"
 	TmpVarDescription      = "Description"
 	TmpVarMRURL            = "MergeRequestURL"
+	TmpVarGitlabMentions   = "GitlabMentions"
 )
 
-func getTextArgs(branch, projectName string, params CreateMRParams) map[string]string {
+func getTextArgs(branch, projectName string, params CreateMRParams, members []mentioner.Member) map[string]string {
 	r := map[string]string{}
+
+	gitlabMentions := make([]string, 0, len(members))
+	for _, m := range members {
+		gitlabMentions = append(gitlabMentions, "@"+m.GitlabUsername)
+	}
 
 	defer func() {
 		// in the end override values with well known
 		r[TmpVarProjectName] = projectName
 		r[TmpVarBranchName] = branch
 		r[TmpVarTargetBranchName] = params.TargetBranch
+		r[TmpVarGitlabMentions] = strings.Join(gitlabMentions, " ")
 	}()
 
 	if params.BranchRegexp == nil {

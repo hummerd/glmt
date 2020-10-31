@@ -12,6 +12,8 @@ import (
 	"gitlab.com/gitlab-merge-tool/glmt/internal/gitlab"
 	gitlabi "gitlab.com/gitlab-merge-tool/glmt/internal/gitlab/impl"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/glmt"
+	"gitlab.com/gitlab-merge-tool/glmt/internal/mentioner"
+	mentioneri "gitlab.com/gitlab-merge-tool/glmt/internal/mentioner/impl"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/notifier"
 
 	"github.com/rs/zerolog"
@@ -150,7 +152,7 @@ func applyFlags(flags *pflag.FlagSet, cfg *config.Config) error {
 	return nil
 }
 
-func createCore(dryRun bool, out io.StringWriter, gitCfg *config.GitLab, nfyCfg *config.Notifier) (*glmt.Core, error) {
+func createCore(dryRun bool, out io.StringWriter, cfg *config.Config) (*glmt.Core, error) {
 	git, err := git.NewLocalGit()
 	if err != nil {
 		return nil, err
@@ -158,15 +160,24 @@ func createCore(dryRun bool, out io.StringWriter, gitCfg *config.GitLab, nfyCfg 
 
 	var gitlab gitlab.GitLab
 	if dryRun {
-		gitlab = gitlabi.NewDryRunGitLab(out, gitCfg.Token, gitCfg.URL)
+		gitlab = gitlabi.NewDryRunGitLab(out, cfg.GitLab.Token, cfg.GitLab.URL)
 	} else {
-		gitlab = gitlabi.NewHTTPGitLab(gitCfg.Token, gitCfg.URL)
+		gitlab = gitlabi.NewHTTPGitLab(cfg.GitLab.Token, cfg.GitLab.URL)
 	}
 
 	var n glmt.Notifier
-	if nfyCfg.SlackWebHook.URL != "" {
-		n = notifier.NewSlackWebHookNotifier(nfyCfg.SlackWebHook.URL, nfyCfg.SlackWebHook.MessageTemplate)
+	if cfg.Notifier.SlackWebHook.URL != "" {
+		n = notifier.NewSlackWebHookNotifier(
+			cfg.Notifier.SlackWebHook.URL,
+			cfg.Notifier.SlackWebHook.MessageTemplate,
+		)
 	}
 
-	return glmt.NewGLMT(git, gitlab, n), nil
+	var m mentioner.Mentioner
+	m, err = mentioneri.NewMentioner(cfg.Mentioner)
+	if err != nil {
+		return nil, fmt.Errorf("initializing mentioner: %w", err)
+	}
+
+	return glmt.NewGLMT(git, gitlab, n, m), nil
 }

@@ -34,7 +34,7 @@ func createMR(cmd *cobra.Command, logger zerolog.Logger, out io.StringWriter) {
 		os.Exit(1)
 	}
 
-	core, err := createCore(dryRun, out, &cfg.GitLab, &cfg.Notifier)
+	core, err := createCore(dryRun, out, cfg)
 	if err != nil {
 		_, _ = out.WriteString("Failed to start glmt: " + err.Error() + "\n")
 		os.Exit(1)

@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"gitlab.com/gitlab-merge-tool/glmt/internal/gitlab"
+	"gitlab.com/gitlab-merge-tool/glmt/internal/mentioner"
+	mentioneri "gitlab.com/gitlab-merge-tool/glmt/internal/mentioner/impl"
 )
 
 func TestRemoteParse(t *testing.T) {
@@ -49,14 +51,18 @@ func TestTextArgs(t *testing.T) {
 		"Task":              "TASK-123",
 		"TaskType":          "feature",
 		"BranchDescription": "some-description",
+		"GitlabMentions":    "@test",
 	}
 
 	params := CreateMRParams{
 		TargetBranch: expTa["TargetBranchName"],
 		BranchRegexp: regexp.MustCompile(`(?P<TaskType>.*)/(?P<Task>.*)/(?P<BranchDescription>.*)`),
 	}
+	members := []mentioner.Member{{
+		GitlabUsername: "test",
+	}}
 
-	ta := getTextArgs(expTa["BranchName"], expTa["ProjectName"], params)
+	ta := getTextArgs(expTa["BranchName"], expTa["ProjectName"], params, members)
 
 	if !reflect.DeepEqual(expTa, ta) {
 		t.Fatalf("expected ta: %+v, got %+v", expTa, ta)
@@ -102,9 +108,12 @@ func TestCreateMR(t *testing.T) {
 		},
 	}
 
+	mntr := mentioneri.NewNOOPMentioner()
+
 	c := Core{
-		git:    gs,
-		gitLab: gls,
+		git:       gs,
+		gitLab:    gls,
+		mentioner: mntr,
 	}
 
 	mr, err := c.CreateMR(context.Background(), cp)

@@ -75,7 +75,7 @@ Config example:
   "mr": { // Merge Request parameters
     "branch_regexp": "(?P<TaskType>.*)/(?P<Task>.*)/(?P<BranchDescription>.*)",
     "title": "{{.Task}} {{humanizeText .BranchDescription}}", // can be template
-    "description": "Merge feature {{.Task}} \"{{humanizeText .BranchDescription}}\" into {{.TargetBranchName}}", // can be template
+    "description": "Merge feature {{.Task}} \"{{humanizeText .BranchDescription}}\" into {{.TargetBranchName}}\n\nReviewers: {{.GitlabMentions}}", // can be template
     "target_branch": "develop",
     "squash": true,
     "remove_source_branch": true
@@ -85,7 +85,28 @@ Config example:
   	  "url": "https://hooks.slack.com/services/XXX/XXX/XXX", // Learn how to get in https://api.slack.com/legacy/custom-integrations/messaging/webhooks
       "message_template": "<!here>\n{{.Description}}\n{{.MergeRequestURL}}" // can be template
     }
+  },
+  "mentioner": {
+    "enabled": true,
+    "data_source": "http://url-to-mentioner-config.json",
+    "count": 2,
+    "member_uid": "00000000-0000-0000-0000-000000000000"
   }
+}
+```
+
+Mentioner config example:
+```jsonc
+{
+  "members": [{
+    "uid": "00000000-0000-0000-0000-000000000000",
+    "full_name": "Example Example",
+    "slack_username": "glmt",
+    "gitlab_username": "glmt",
+    "owns_projects": ["hummerd/glmt"],
+    "is_active": true
+  }]
+}
 ```
 
 ## Templating
@@ -94,6 +115,12 @@ Title and Description and other fields can be static string or it can be templat
 * ProjectName - project name (path extracted from git remote)
 * BranchName - current branch name
 * TargetBranchName - target branch name (from config or flag)
+* GitlabMentions - string with mentioned members
+
+Variables available for notification (previous variables are also available):
+ * Title - Merge request title
+ * Description - Merge request description
+ * MergeRequestURL - Merge request URL
 
 Variables available for notification (previous variables are also available):
  * Title - Merge request title

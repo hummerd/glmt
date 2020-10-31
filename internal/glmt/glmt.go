@@ -9,9 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rs/zerolog/log"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/gitlab"
+	"gitlab.com/gitlab-merge-tool/glmt/internal/mentioner"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/templating"
+
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -22,18 +24,21 @@ func NewGLMT(
 	git Git,
 	gitLab gitlab.GitLab,
 	notifier Notifier,
+	mentioner mentioner.Mentioner,
 ) *Core {
 	return &Core{
-		git:      git,
-		gitLab:   gitLab,
-		notifier: notifier,
+		git:       git,
+		gitLab:    gitLab,
+		notifier:  notifier,
+		mentioner: mentioner,
 	}
 }
 
 type Core struct {
-	git      Git
-	gitLab   gitlab.GitLab
-	notifier Notifier
+	git       Git
+	gitLab    gitlab.GitLab
+	notifier  Notifier
+	mentioner mentioner.Mentioner
 }
 
 type CreateMRParams struct {
@@ -75,7 +80,13 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 		return mr, err
 	}
 
-	ta := getTextArgs(br, p, params)
+	var members []mentioner.Member
+	members, err = c.mentioner.Mentions(p)
+	if err != nil {
+		return mr, err
+	}
+
+	ta := getTextArgs(br, p, params, members)
 
 	var t string
 	if params.TitleTemplate != "" {

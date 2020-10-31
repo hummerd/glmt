@@ -11,8 +11,9 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/rs/zerolog/log"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/gitlab"
+
+	"github.com/rs/zerolog/log"
 )
 
 func NewHTTPGitLab(token, host string) *HTTPGitLab {
