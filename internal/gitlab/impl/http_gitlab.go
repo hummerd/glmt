@@ -77,6 +77,45 @@ func (gl *HTTPGitLab) CreateMR(ctx context.Context, req gitlab.CreateMRRequest) 
 	return resp, nil
 }
 
+func (gl *HTTPGitLab) CurrentUser(ctx context.Context) (gitlab.UserResponse, error) {
+	var resp gitlab.UserResponse
+
+	methodURL := fmt.Sprintf("%s/api/v4/user", gl.host)
+	hReq, err := http.NewRequestWithContext(ctx, http.MethodGet, methodURL, nil)
+	if err != nil {
+		return resp, fmt.Errorf("can not create request for gitlab's user: %w", err)
+	}
+
+	hReq.Header.Set("Private-Token", gl.token)
+
+	log.Ctx(ctx).Debug().
+		Stringer("url", hReq.URL).
+		Str("token", hideToken(gl.token)).
+		Msg("get to gitlab")
+
+	hResp, err := gl.c.Do(hReq)
+	if err != nil {
+		return resp, fmt.Errorf("can not get user from gitlab: %w", err)
+	}
+
+	defer hResp.Body.Close()
+
+	if hResp.StatusCode != http.StatusOK {
+		errm, err := ioutil.ReadAll(hResp.Body)
+		if err != nil {
+			return resp, fmt.Errorf("can not decode error from gitlab's get user: %w", err)
+		}
+		return resp, gitlab.GitlabError{Message: string(errm)}
+	}
+
+	err = json.NewDecoder(hResp.Body).Decode(&resp)
+	if err != nil {
+		return resp, fmt.Errorf("can not decode response from gitlab's get user: %w", err)
+	}
+
+	return resp, nil
+}
+
 func createHTTPRequest(ctx context.Context, token, host string, req gitlab.CreateMRRequest) (*http.Request, error) {
 	data := &bytes.Buffer{}
 	enc := json.NewEncoder(data)

@@ -74,8 +74,8 @@ Config example:
   },
   "mr": { // Merge Request parameters
     "branch_regexp": "(?P<TaskType>.*)/(?P<Task>.*)/(?P<BranchDescription>.*)",
-    "title": "{{.Task}} {{humanizeText .BranchDescription}}", // can be template
-    "description": "Merge feature {{.Task}} \"{{humanizeText .BranchDescription}}\" into {{.TargetBranchName}}", // can be template
+    "title": "{{.Task}} {{humanizeText .BranchDescription}}", // MR's title, can be template
+    "description": "Merge feature {{.Task}} \"{{humanizeText .BranchDescription}}\" into {{.TargetBranchName}}\n{{.GitlabMentions}}", // MR's description, can be template
     "target_branch": "develop",
     "squash": true,
     "remove_source_branch": true
@@ -83,8 +83,12 @@ Config example:
   "notifier": { // Notification parameters
     "slack_web_hook": {
   	  "url": "https://hooks.slack.com/services/XXX/XXX/XXX", // Learn how to get in https://api.slack.com/legacy/custom-integrations/messaging/webhooks
-      "message_template": "<!here>\n{{.Description}}\n{{.MergeRequestURL}}" // can be template
+      "message": "<!here>\n{{.Description}}\n{{.MergeRequestURL}}" // Message to be posted to slack, can be template
     }
+  },
+  "mentioner": {
+    "team_file_source": "PATH_TO/glmt-team.config", // path (can be http url) to team file
+    "count": 2 // number of project members to be mentioned in MR
   }
 ```
 
@@ -94,6 +98,7 @@ Title and Description and other fields can be static string or it can be templat
 * ProjectName - project name (path extracted from git remote)
 * BranchName - current branch name
 * TargetBranchName - target branch name (from config or flag)
+* GitlabMentions - mentions added to MR
 
 Variables available for notification (previous variables are also available):
  * Title - Merge request title

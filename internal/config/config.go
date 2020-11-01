@@ -8,9 +8,10 @@ import (
 )
 
 type Config struct {
-	GitLab   GitLab   `json:"gitlab"`
-	MR       MR       `json:"mr"`
-	Notifier Notifier `json:"notifier"`
+	GitLab    GitLab    `json:"gitlab"`
+	MR        MR        `json:"mr"`
+	Notifier  Notifier  `json:"notifier"`
+	Mentioner Mentioner `json:"mentioner"`
 }
 
 type GitLab struct {
@@ -32,8 +33,14 @@ type Notifier struct {
 }
 
 type SlackWebHook struct {
-	URL             string `json:"url"`
-	MessageTemplate string `json:"message_template"`
+	URL     string `json:"url"`
+	Message string `json:"message"`
+	User    string `json:"user"`
+}
+
+type Mentioner struct {
+	TeamFileSource string `json:"team_file_source"`
+	MentionsCount  int    `json:"count"`
 }
 
 func LoadConfig(path string) (*Config, error) {

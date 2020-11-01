@@ -32,6 +32,14 @@ func (e GitlabError) Error() string {
 	return e.Message
 }
 
+type UserResponse struct {
+	ID       int    `json:"id"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Name     string `json:"name"`
+}
+
 type GitLab interface {
 	CreateMR(ctx context.Context, req CreateMRRequest) (CreateMRResponse, error)
+	CurrentUser(ctx context.Context) (UserResponse, error)
 }

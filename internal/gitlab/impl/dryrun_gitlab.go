@@ -40,6 +40,10 @@ func (gl *DryRunGitLab) CreateMR(ctx context.Context, req gitlab.CreateMRRequest
 	}, nil
 }
 
+func (gl *DryRunGitLab) CurrentUser(ctx context.Context) (gitlab.UserResponse, error) {
+	return gitlab.UserResponse{}, nil
+}
+
 func writeRequest(out io.StringWriter, r *http.Request) {
 	_, _ = out.WriteString(fmt.Sprintf("%v %v\n", r.Method, r.URL))
 

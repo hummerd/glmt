@@ -2,8 +2,8 @@ package templating
 
 import (
 	"bytes"
-	"html/template"
 	"strings"
+	"text/template"
 	"unicode"
 )
 

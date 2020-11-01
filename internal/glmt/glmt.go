@@ -4,15 +4,23 @@ package glmt
 import (
 	"context"
 	"errors"
+	"math/rand"
 	"net/url"
 	"regexp"
 	"strings"
 	"time"
 
 	"github.com/rs/zerolog/log"
+
+	"gitlab.com/gitlab-merge-tool/glmt/internal/gerr"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/gitlab"
+	"gitlab.com/gitlab-merge-tool/glmt/internal/team"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/templating"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 var (
 	ErrNotification = errors.New("notification error")
@@ -22,18 +30,22 @@ func NewGLMT(
 	git Git,
 	gitLab gitlab.GitLab,
 	notifier Notifier,
+	teamSource team.TeamFileSource,
 ) *Core {
 	return &Core{
-		git:      git,
-		gitLab:   gitLab,
-		notifier: notifier,
+		git:        git,
+		gitLab:     gitLab,
+		notifier:   notifier,
+		teamSource: teamSource,
 	}
 }
 
 type Core struct {
-	git      Git
-	gitLab   gitlab.GitLab
-	notifier Notifier
+	git             Git
+	gitLab          gitlab.GitLab
+	notifier        Notifier
+	teamSource      team.TeamFileSource
+	currentUsername string
 }
 
 type CreateMRParams struct {
@@ -44,6 +56,7 @@ type CreateMRParams struct {
 	Squash              bool
 	RemoveBranch        bool
 	NotificationMessage string
+	MentionsCount       int
 }
 
 type MergeRequest struct {
@@ -75,17 +88,40 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 		return mr, err
 	}
 
-	ta := getTextArgs(br, p, params)
+	var ms []*team.Member
+	if c.teamSource != nil && params.MentionsCount > 0 {
+		tm, err := c.teamSource.Team(ctx)
+		if err != nil {
+			return mr, err
+		}
+
+		cu, err := c.currentUser(ctx)
+		if err != nil {
+			return mr, err
+		}
+
+		ms = Mentions(tm, cu, p, params.MentionsCount)
+	}
+
+	ta := getTextArgs(br, p, params, ms)
 
 	var t string
 	if params.TitleTemplate != "" {
 		t = templating.CreateText("title", params.TitleTemplate, ta)
 	}
 
+	t = strings.TrimSpace(t)
+	if t == "" {
+		t = br
+	}
+
 	var d string
 	if params.DescriptionTemplate != "" {
 		d = templating.CreateText("description", params.DescriptionTemplate, ta)
-	} else {
+	}
+
+	d = strings.TrimSpace(d)
+	if d == "" {
 		d = "Merge " + br + " into " + params.TargetBranch
 	}
 
@@ -121,11 +157,30 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 
 		err = c.notifier.Send(ctx, ta, params.NotificationMessage)
 		if err != nil {
-			err = NewNestedError(ErrNotification, err)
+			err = gerr.NewNestedError(ErrNotification, err)
 		}
+
+		log.Ctx(ctx).Debug().
+			Interface("context", ta).
+			Msg("notification")
+
 	}
 
 	return mr, err
+}
+
+func (c *Core) currentUser(ctx context.Context) (string, error) {
+	if c.currentUsername != "" {
+		return c.currentUsername, nil
+	}
+
+	cu, err := c.gitLab.CurrentUser(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	c.currentUsername = cu.Username
+	return c.currentUsername, nil
 }
 
 func projectFromRemote(rem string) (string, error) {

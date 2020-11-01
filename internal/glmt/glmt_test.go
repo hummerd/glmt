@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"gitlab.com/gitlab-merge-tool/glmt/internal/gitlab"
+	teami "gitlab.com/gitlab-merge-tool/glmt/internal/team/impl"
 )
 
 func TestRemoteParse(t *testing.T) {
@@ -43,12 +44,13 @@ func TestRemoteParse(t *testing.T) {
 
 func TestTextArgs(t *testing.T) {
 	expTa := map[string]string{
-		"ProjectName":       "prj1",
-		"BranchName":        "feature/TASK-123/some-description",
-		"TargetBranchName":  "develop",
-		"Task":              "TASK-123",
-		"TaskType":          "feature",
-		"BranchDescription": "some-description",
+		"ProjectName":        "prj1",
+		"BranchName":         "feature/TASK-123/some-description",
+		"TargetBranchName":   "develop",
+		"Task":               "TASK-123",
+		"TaskType":           "feature",
+		"BranchDescription":  "some-description",
+		TmpVarGitlabMentions: "",
 	}
 
 	params := CreateMRParams{
@@ -56,7 +58,7 @@ func TestTextArgs(t *testing.T) {
 		BranchRegexp: regexp.MustCompile(`(?P<TaskType>.*)/(?P<Task>.*)/(?P<BranchDescription>.*)`),
 	}
 
-	ta := getTextArgs(expTa["BranchName"], expTa["ProjectName"], params)
+	ta := getTextArgs(expTa["BranchName"], expTa["ProjectName"], params, nil)
 
 	if !reflect.DeepEqual(expTa, ta) {
 		t.Fatalf("expected ta: %+v, got %+v", expTa, ta)
@@ -102,9 +104,11 @@ func TestCreateMR(t *testing.T) {
 		},
 	}
 
+	ts, _ := teami.NewTeamSource("")
 	c := Core{
-		git:    gs,
-		gitLab: gls,
+		git:        gs,
+		gitLab:     gls,
+		teamSource: ts,
 	}
 
 	mr, err := c.CreateMR(context.Background(), cp)
@@ -143,6 +147,13 @@ type gitlabStub struct {
 func (gls *gitlabStub) CreateMR(ctx context.Context, req gitlab.CreateMRRequest) (gitlab.CreateMRResponse, error) {
 	gls.f("CreateMR", req)
 	return gitlab.CreateMRResponse{
+		ID: 123,
+	}, nil
+}
+
+func (gls *gitlabStub) CurrentUser(ctx context.Context) (gitlab.UserResponse, error) {
+	gls.f("CurrentUser", nil)
+	return gitlab.UserResponse{
 		ID: 123,
 	}, nil
 }

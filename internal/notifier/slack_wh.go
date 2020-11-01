@@ -7,15 +7,17 @@ import (
 	"gitlab.com/gitlab-merge-tool/glmt/internal/templating"
 )
 
-func NewSlackWebHookNotifier(url, messageTemplate string) *SlackWebHookNotifier {
+func NewSlackWebHookNotifier(url, user, messageTemplate string) *SlackWebHookNotifier {
 	return &SlackWebHookNotifier{
 		url:             url,
+		user:            user,
 		messageTemplate: messageTemplate,
 	}
 }
 
 type SlackWebHookNotifier struct {
 	url             string
+	user            string
 	messageTemplate string
 }
 
@@ -28,11 +30,12 @@ func (sn *SlackWebHookNotifier) Send(ctx context.Context, args map[string]string
 	m := templating.CreateText("slack_wh_message", templ, args)
 
 	if add != "" {
-		m = "\n" + add
+		m += "\n" + add
 	}
 
 	msg := &slack.WebhookMessage{
-		Text: m,
+		Text:     m,
+		Username: sn.user,
 	}
 	return slack.PostWebhookContext(ctx, sn.url, msg)
 }

@@ -13,6 +13,7 @@ import (
 	gitlabi "gitlab.com/gitlab-merge-tool/glmt/internal/gitlab/impl"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/glmt"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/notifier"
+	teami "gitlab.com/gitlab-merge-tool/glmt/internal/team/impl"
 
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
@@ -150,12 +151,13 @@ func applyFlags(flags *pflag.FlagSet, cfg *config.Config) error {
 	return nil
 }
 
-func createCore(dryRun bool, out io.StringWriter, gitCfg *config.GitLab, nfyCfg *config.Notifier) (*glmt.Core, error) {
+func createCore(dryRun bool, out io.StringWriter, cfg *config.Config) (*glmt.Core, error) {
 	git, err := git.NewLocalGit()
 	if err != nil {
 		return nil, err
 	}
 
+	gitCfg := cfg.GitLab
 	var gitlab gitlab.GitLab
 	if dryRun {
 		gitlab = gitlabi.NewDryRunGitLab(out, gitCfg.Token, gitCfg.URL)
@@ -163,10 +165,17 @@ func createCore(dryRun bool, out io.StringWriter, gitCfg *config.GitLab, nfyCfg 
 		gitlab = gitlabi.NewHTTPGitLab(gitCfg.Token, gitCfg.URL)
 	}
 
+	nfyCfg := cfg.Notifier
 	var n glmt.Notifier
 	if nfyCfg.SlackWebHook.URL != "" {
-		n = notifier.NewSlackWebHookNotifier(nfyCfg.SlackWebHook.URL, nfyCfg.SlackWebHook.MessageTemplate)
+		n = notifier.NewSlackWebHookNotifier(nfyCfg.SlackWebHook.URL, nfyCfg.SlackWebHook.User, nfyCfg.SlackWebHook.Message)
 	}
 
-	return glmt.NewGLMT(git, gitlab, n), nil
+	mrCfg := cfg.Mentioner
+	ts, err := teami.NewTeamSource(mrCfg.TeamFileSource)
+	if err != nil {
+		return nil, err
+	}
+
+	return glmt.NewGLMT(git, gitlab, n, ts), nil
 }

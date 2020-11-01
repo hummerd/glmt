@@ -1,4 +1,4 @@
-package glmt
+package gerr
 
 import (
 	"errors"
@@ -8,13 +8,13 @@ import (
 )
 
 func TestNestedErrorIs(t *testing.T) {
-	n := NewNestedError(ErrNotification, io.EOF)
+	n := NewNestedError(net.ErrWriteToConnected, io.EOF)
 
 	if !errors.Is(n, NestedError{}) {
 		t.Fatal("error is NestedError")
 	}
 
-	if !errors.Is(n, ErrNotification) {
+	if !errors.Is(n, net.ErrWriteToConnected) {
 		t.Fatal("error is not ErrNotification")
 	}
 
@@ -26,10 +26,9 @@ func TestNestedErrorIs(t *testing.T) {
 func TestNestedErrorAs(t *testing.T) {
 	n := NewNestedError(&net.ParseError{}, &net.OpError{})
 
-	// NestedError is transparent
 	var ne NestedError
 	if !errors.As(n, &ne) {
-		t.Fatal("error is NestedError")
+		t.Fatal("error is not NestedError")
 	}
 
 	pe := &net.ParseError{}
