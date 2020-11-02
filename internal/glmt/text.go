@@ -7,13 +7,14 @@ import (
 )
 
 const (
-	TmpVarProjectName      = "ProjectName"
-	TmpVarBranchName       = "BranchName"
-	TmpVarTargetBranchName = "TargetBranchName"
-	TmpVarTitle            = "Title"
-	TmpVarDescription      = "Description"
-	TmpVarMRURL            = "MergeRequestURL"
-	TmpVarGitlabMentions   = "GitlabMentions"
+	TmpVarProjectName          = "ProjectName"
+	TmpVarBranchName           = "BranchName"
+	TmpVarTargetBranchName     = "TargetBranchName"
+	TmpVarTitle                = "Title"
+	TmpVarDescription          = "Description"
+	TmpVarMRURL                = "MergeRequestURL"
+	TmpVarGitlabMentions       = "GitlabMentions"
+	TmpVarNotificationMentions = "NotificationMentions"
 )
 
 func getTextArgs(branch, projectName string, params CreateMRParams, members []*team.Member) map[string]string {

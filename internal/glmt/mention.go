@@ -22,6 +22,8 @@ func Mentions(t *team.Team, me, project string, count int) []*team.Member {
 	owners := make([]*team.Member, 0, len(members))
 	restMembers := make([]*team.Member, 0, len(members))
 
+	me = strings.TrimPrefix(me, "@")
+
 	for _, member := range members {
 		switch {
 		case !member.IsActive:

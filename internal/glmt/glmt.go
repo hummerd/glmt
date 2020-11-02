@@ -155,7 +155,7 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 		ta[TmpVarDescription] = d
 		ta[TmpVarMRURL] = gmr.URL
 
-		err = c.notifier.Send(ctx, ta, params.NotificationMessage)
+		err = c.notifier.Send(ctx, ta, params.NotificationMessage, ms)
 		if err != nil {
 			err = gerr.NewNestedError(ErrNotification, err)
 		}
