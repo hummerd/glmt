@@ -1,7 +1,8 @@
 # GitLab Merge Tool
 
 ## Overview
-GitLab Merge Tool (glmt) is CLI tool for making merge requests in GitLab. It's designed to be easy to use but still flexible to cover many use cases for different teams.
+GitLab Merge Tool (glmt) is CLI tool for making merge requests in GitLab. It's designed to be easy to use but
+still flexible to cover many use cases for different teams.
 
 ## Features
 * Creating MR form command line
@@ -11,7 +12,8 @@ GitLab Merge Tool (glmt) is CLI tool for making merge requests in GitLab. It's d
 
 ## Usage
 
-Want to crate Merge Request from command line? Just run `glmt create` from your project's directory. GLMT will create MR from current git brunch to specified branch.
+Want to crate Merge Request from command line? Just run `glmt create` from your project's directory. GLMT will
+create MR from current git brunch to specified branch.
 
 ## Installation
 
@@ -87,27 +89,67 @@ Config example:
     }
   },
   "mentioner": {
-    "team_file_source": "PATH_TO/glmt-team.config", // path (can be http url) to team file
-    "count": 2 // number of project members to be mentioned in MR
+    "team_file_source": "PATH_TO/glmt-team.config", // Path (can be http url) to team file, see info about "Team file"
+    "count": 2 // Number of project members to be mentioned in MR
   }
 ```
 
 ## Templating
 
-Title and Description and other fields can be static string or it can be template. Templates made as https://golang.org/pkg/text/template/. In template you can specify predefined variables:
+Title and Description and other fields can be static string or it can be template. Templates made
+as https://golang.org/pkg/text/template/. In template you can specify predefined variables:
 * ProjectName - project name (path extracted from git remote)
 * BranchName - current branch name
 * TargetBranchName - target branch name (from config or flag)
-* GitlabMentions - mentions added to MR
+* GitlabMentions - mentions added to MR (uses username from team file, it should be gitlab username), see [Mentions](#Mentions)
 
 Variables available for notification (previous variables are also available):
- * Title - Merge request title
- * Description - Merge request description
- * MergeRequestURL - Merge request URL
+ * Title - merge request title
+ * Description - merge request description
+ * MergeRequestURL - merge request URL
+ * NotificationMentions - mentions for notification (uses user names apropriate for this notificator), see [Mentions](#Mentions)
 
-Additionally you can use any regexp group name from `branch_regexp` in description of title templates. If `title` not specified, current branch name will be used as title. If `description` not specified template "`Merge {{.BranchName }}" into {{.TargetBranchName}}`" will be used for description.
+Additionally you can use any regexp group name from `branch_regexp` in description of title templates.
+If `title` not specified, current branch name will be used as title. If `description` not specified
+template "`Merge {{.BranchName }}" into {{.TargetBranchName}}`" will be used for description.
 
 Also there is predefined functions for templates:
 * humanizeText - capitalize first character and replaces "-" and "_" with space
 * upper - change letters to upper case
 * lower - change letters to lower case
+
+## Mentions
+
+GLMT can mention some members of your team in MR and notification message. GLMT will select number of
+members specified in config file (`mentioner.count`). If one of member is project owner it will be included in mention list.
+All other mentioned members will be selected randomly. Only active members are mentioned.
+
+GLMT knows your team members from team file, specified in `mentioner.team_file_source`.
+
+### Team file
+
+Team file has following structure:
+
+```jsonc
+{
+  "members": [
+    {
+  	  "username": "john",                   // Gitlab's username (without @)
+	    "owns_projects": ["group/project1"],  // Project's name, owned by John
+	    "is_active": true,                    // Is John active at current moment (you can seet it to false for vacation time)
+	    "names": {                            // Names for different notification channels
+	  	  "slack_member_id": "AABBXX"
+	    }
+    },
+    {
+  	  "username": "nick",
+	    "owns_projects": ["group/project2"],
+	    "is_active": true,
+	    "names": {
+	  	  "slack_member_id": "CCDDXX"
+	    }
+    }
+    ...
+  ]
+}
+```
