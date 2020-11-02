@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"gitlab.com/gitlab-merge-tool/glmt/internal/gitlab"
+	"gitlab.com/gitlab-merge-tool/glmt/internal/team"
 	teami "gitlab.com/gitlab-merge-tool/glmt/internal/team/impl"
 )
 
@@ -44,13 +45,14 @@ func TestRemoteParse(t *testing.T) {
 
 func TestTextArgs(t *testing.T) {
 	expTa := map[string]string{
-		"ProjectName":        "prj1",
-		"BranchName":         "feature/TASK-123/some-description",
-		"TargetBranchName":   "develop",
-		"Task":               "TASK-123",
-		"TaskType":           "feature",
-		"BranchDescription":  "some-description",
-		TmpVarGitlabMentions: "",
+		TmpVarProjectName:      "prj1",
+		TmpVarBranchName:       "feature/TASK-123/some-description",
+		TmpVarTargetBranchName: "develop",
+		TmpVarGitlabMentions:   "@test",
+
+		"Task":              "TASK-123",
+		"TaskType":          "feature",
+		"BranchDescription": "some-description",
 	}
 
 	params := CreateMRParams{
@@ -58,7 +60,10 @@ func TestTextArgs(t *testing.T) {
 		BranchRegexp: regexp.MustCompile(`(?P<TaskType>.*)/(?P<Task>.*)/(?P<BranchDescription>.*)`),
 	}
 
-	ta := getTextArgs(expTa["BranchName"], expTa["ProjectName"], params, nil)
+	members := []*team.Member{{
+		Username: "test",
+	}}
+	ta := getTextArgs(expTa["BranchName"], expTa["ProjectName"], params, members)
 
 	if !reflect.DeepEqual(expTa, ta) {
 		t.Fatalf("expected ta: %+v, got %+v", expTa, ta)
