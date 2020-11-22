@@ -33,12 +33,14 @@ type MR struct {
 
 type Notifier struct {
 	SlackWebHook SlackWebHook `json:"slack_web_hook"`
+	Telegram     Telegram     `json:"telegram"`
 }
 
 type SlackWebHook struct {
-	URL     string `json:"url"`
-	Message string `json:"message"`
-	User    string `json:"user"`
+	Enabled     bool   `json:"enabled"`
+	URL         string `json:"url"`
+	MessageTmpl string `json:"message"`
+	User        string `json:"user"`
 }
 
 type Mentioner struct {
@@ -50,6 +52,14 @@ type Hooks struct {
 	AfterCommands  map[string][]string `json:"after"`
 	BeforeCommands map[string][]string `json:"before"`
 	Timeout        Duration            `json:"timeout"`
+}
+
+type Telegram struct {
+	Enabled     bool   `json:"enabled"`
+	URL         string `json:"url"`
+	APIKey      string `json:"api_key"`
+	MessageTmpl string `json:"message"`
+	ChatID      string `json:"chat_id"`
 }
 
 func LoadConfig(path string) (*Config, error) {

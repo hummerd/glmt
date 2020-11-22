@@ -1,9 +1,9 @@
-package notifier
+package impl
 
 import (
 	"context"
-	"strings"
 
+	"gitlab.com/gitlab-merge-tool/glmt/internal/config"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/glmt"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/team"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/templating"
@@ -11,31 +11,31 @@ import (
 	"github.com/slack-go/slack"
 )
 
-const (
-	slackMemberKey = "slack_member_id"
-)
-
-func NewSlackWebHookNotifier(url, user, message string) *SlackWebHookNotifier {
+func NewSlackWebHookNotifier(cfg config.SlackWebHook) *SlackWebHookNotifier {
 	return &SlackWebHookNotifier{
-		url:     url,
-		user:    user,
-		message: message,
+		url:         cfg.URL,
+		user:        cfg.User,
+		messageTmpl: cfg.MessageTmpl,
 	}
 }
 
 type SlackWebHookNotifier struct {
-	url     string
-	user    string
-	message string
+	url         string
+	user        string
+	messageTmpl string
 }
 
 func (sn *SlackWebHookNotifier) Send(ctx context.Context, args map[string]string, add string, mentions []*team.Member) error {
-	templ := sn.message
+	templ := sn.messageTmpl
 	if templ == "" {
 		templ = "<!here>\n{{.Description}}\n{{.MergeRequestURL}}"
 	}
 
-	args[glmt.TmpVarNotificationMentions] = getSlackMentions(mentions)
+	args[glmt.TmpVarNotificationMentions] = getMentions(
+		mentions,
+		memberKeySlack,
+		"<@%s>",
+	)
 
 	m := templating.CreateText("slack_wh_message", templ, args)
 
@@ -48,16 +48,4 @@ func (sn *SlackWebHookNotifier) Send(ctx context.Context, args map[string]string
 		Username: sn.user,
 	}
 	return slack.PostWebhookContext(ctx, sn.url, msg)
-}
-
-func getSlackMentions(mentions []*team.Member) string {
-	ms := make([]string, 0, len(mentions))
-	for _, m := range mentions {
-		n := m.Names[slackMemberKey]
-		if n != "" {
-			ms = append(ms, "<@"+n+">")
-		}
-	}
-
-	return strings.Join(ms, ", ")
 }
