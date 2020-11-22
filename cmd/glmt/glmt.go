@@ -12,6 +12,7 @@ import (
 	"gitlab.com/gitlab-merge-tool/glmt/internal/gitlab"
 	gitlabi "gitlab.com/gitlab-merge-tool/glmt/internal/gitlab/impl"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/glmt"
+	hooksi "gitlab.com/gitlab-merge-tool/glmt/internal/hooks/impl"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/notifier"
 	teami "gitlab.com/gitlab-merge-tool/glmt/internal/team/impl"
 
@@ -177,5 +178,8 @@ func createCore(dryRun bool, out io.StringWriter, cfg *config.Config) (*glmt.Cor
 		return nil, err
 	}
 
-	return glmt.NewGLMT(git, gitlab, n, ts), nil
+	hsCfg := cfg.Hooks
+	hs := hooksi.NewHooks(hsCfg, os.Stdout, os.Stderr)
+
+	return glmt.NewGLMT(git, gitlab, n, ts, hs), nil
 }

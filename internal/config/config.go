@@ -2,7 +2,9 @@
 package config
 
 import (
+	"encoding/json"
 	"os"
+	"time"
 
 	"github.com/yosuke-furukawa/json5/encoding/json5"
 )
@@ -12,6 +14,7 @@ type Config struct {
 	MR        MR        `json:"mr"`
 	Notifier  Notifier  `json:"notifier"`
 	Mentioner Mentioner `json:"mentioner"`
+	Hooks     Hooks     `json:"hooks"`
 }
 
 type GitLab struct {
@@ -43,6 +46,12 @@ type Mentioner struct {
 	MentionsCount  int    `json:"count"`
 }
 
+type Hooks struct {
+	AfterCommands  map[string][]string `json:"after"`
+	BeforeCommands map[string][]string `json:"before"`
+	Timeout        Duration            `json:"timeout"`
+}
+
 func LoadConfig(path string) (*Config, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -58,4 +67,25 @@ func LoadConfig(path string) (*Config, error) {
 	}
 
 	return &c, nil
+}
+
+type Duration time.Duration
+
+func (d *Duration) UnmarshalJSON(b []byte) (err error) {
+	var rawTime string
+
+	err = json.Unmarshal(b, &rawTime)
+	if err != nil {
+		return err
+	}
+
+	var td time.Duration
+	td, err = time.ParseDuration(rawTime)
+	if err != nil {
+		return err
+	}
+
+	*d = Duration(td)
+
+	return nil
 }

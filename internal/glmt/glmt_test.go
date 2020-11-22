@@ -6,7 +6,9 @@ import (
 	"regexp"
 	"testing"
 
+	"gitlab.com/gitlab-merge-tool/glmt/internal/config"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/gitlab"
+	hooksi "gitlab.com/gitlab-merge-tool/glmt/internal/hooks/impl"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/team"
 	teami "gitlab.com/gitlab-merge-tool/glmt/internal/team/impl"
 )
@@ -110,10 +112,12 @@ func TestCreateMR(t *testing.T) {
 	}
 
 	ts, _ := teami.NewTeamSource("")
+	hs := hooksi.NewHooks(config.Hooks{}, nil, nil)
 	c := Core{
 		git:        gs,
 		gitLab:     gls,
 		teamSource: ts,
+		hooks:      hs,
 	}
 
 	mr, err := c.CreateMR(context.Background(), cp)

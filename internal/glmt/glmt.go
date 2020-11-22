@@ -4,6 +4,7 @@ package glmt
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math/rand"
 	"net/url"
 	"regexp"
@@ -14,6 +15,7 @@ import (
 
 	"gitlab.com/gitlab-merge-tool/glmt/internal/gerr"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/gitlab"
+	"gitlab.com/gitlab-merge-tool/glmt/internal/hooks"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/team"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/templating"
 )
@@ -31,12 +33,14 @@ func NewGLMT(
 	gitLab gitlab.GitLab,
 	notifier Notifier,
 	teamSource team.TeamFileSource,
+	hooks hooks.Runner,
 ) *Core {
 	return &Core{
 		git:        git,
 		gitLab:     gitLab,
 		notifier:   notifier,
 		teamSource: teamSource,
+		hooks:      hooks,
 	}
 }
 
@@ -46,6 +50,7 @@ type Core struct {
 	notifier        Notifier
 	teamSource      team.TeamFileSource
 	currentUsername string
+	hooks           hooks.Runner
 }
 
 type CreateMRParams struct {
@@ -88,14 +93,14 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 		return mr, err
 	}
 
+	cu, err := c.currentUser(ctx)
+	if err != nil {
+		return mr, err
+	}
+
 	var ms []*team.Member
 	if c.teamSource != nil && params.MentionsCount > 0 {
 		tm, err := c.teamSource.Team(ctx)
-		if err != nil {
-			return mr, err
-		}
-
-		cu, err := c.currentUser(ctx)
 		if err != nil {
 			return mr, err
 		}
@@ -125,6 +130,19 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 		d = "Merge " + br + " into " + params.TargetBranch
 	}
 
+	hp := hooks.Params{
+		Branch:   br,
+		Project:  p,
+		Remote:   r,
+		Username: cu,
+		// This value will be set in after hook.
+		MergeRequestURL: "",
+	}
+	err = c.hooks.RunBefore(ctx, hp)
+	if err != nil {
+		return mr, fmt.Errorf("hooks precondition failed: %w", err)
+	}
+
 	log.Ctx(ctx).Debug().
 		Interface("context", ta).
 		Str("title", t).
@@ -142,6 +160,12 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 	})
 	if err != nil {
 		return mr, err
+	}
+
+	hp.MergeRequestURL = gmr.URL
+	err = c.hooks.RunAfter(ctx, hp)
+	if err != nil {
+		return mr, fmt.Errorf("hooks postcondition failed: %w", err)
 	}
 
 	mr.ID = gmr.ID
