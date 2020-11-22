@@ -4,10 +4,11 @@ import (
 	"context"
 	"strings"
 
-	"github.com/slack-go/slack"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/glmt"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/team"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/templating"
+
+	"github.com/slack-go/slack"
 )
 
 const (

@@ -91,7 +91,26 @@ Config example:
   "mentioner": {
     "team_file_source": "PATH_TO/glmt-team.config", // Path (can be http url) to team file, see info about "Team file"
     "count": 2 // Number of project members to be mentioned in MR
+  },
+  // There are several environment variables available in hooks:
+  // GLMT_REMOTE, GLMT_BRANCH, GLMT_MR_URL, GLMT_PROJECT, GLMT_USERNAME.
+  "hooks": {
+    // Before contains commands that will be executed before MR creation.
+    "before": {
+      "git up to date": [
+        "sh", "-c", "git status | grep 'Your branch is up to date with'"
+      ]
+    },
+    // After contains commands that will be executed after MR creation.
+    "after": {
+      "print mr url": [
+        "sh", "-c", "echo MR: $GLMT_MR_URL"
+      ]
+    },
+    // Timeout of all commands in the set.
+    "timeout": "4s"
   }
+}
 ```
 
 ## Templating
