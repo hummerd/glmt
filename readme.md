@@ -84,8 +84,22 @@ Config example:
   },
   "notifier": { // Notification parameters
     "slack_web_hook": {
+      "enabled": true,
   	  "url": "https://hooks.slack.com/services/XXX/XXX/XXX", // Learn how to get in https://api.slack.com/legacy/custom-integrations/messaging/webhooks
       "message": "<!here>\n{{.Description}}\n{{.MergeRequestURL}}" // Message to be posted to slack, can be template
+    },
+    "telegram": {
+      "enabled": true,
+      "url": "https://api.telegram.org",
+      "api_key": "{{.BOT_TOKEN}}", // Ask @BotFather: https://telegram.me/BotFather.
+      "message": "{{.Description}}\n{{.MergeRequestURL}}\n{{.NotificationMentions}}", // Message template.
+      // Where to send a message.
+      //
+      // You can get group_id from:
+      // https://api.telegram.org/bot{{.BOT_TOKEN}}/getUpdates.
+      //
+      // Also disable group privacy for the bot: https://core.telegram.org/bots#privacy-mode.
+      "chat_id": "@BotFather"
     }
   },
   "mentioner": {

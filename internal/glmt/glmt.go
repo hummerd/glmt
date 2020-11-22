@@ -16,6 +16,7 @@ import (
 	"gitlab.com/gitlab-merge-tool/glmt/internal/gerr"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/gitlab"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/hooks"
+	"gitlab.com/gitlab-merge-tool/glmt/internal/notifier"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/team"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/templating"
 )
@@ -31,7 +32,7 @@ var (
 func NewGLMT(
 	git Git,
 	gitLab gitlab.GitLab,
-	notifier Notifier,
+	notifier notifier.Notifier,
 	teamSource team.TeamFileSource,
 	hooks hooks.Runner,
 ) *Core {
@@ -47,7 +48,7 @@ func NewGLMT(
 type Core struct {
 	git             Git
 	gitLab          gitlab.GitLab
-	notifier        Notifier
+	notifier        notifier.Notifier
 	teamSource      team.TeamFileSource
 	currentUsername string
 	hooks           hooks.Runner

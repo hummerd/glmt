@@ -14,6 +14,7 @@ import (
 	"gitlab.com/gitlab-merge-tool/glmt/internal/glmt"
 	hooksi "gitlab.com/gitlab-merge-tool/glmt/internal/hooks/impl"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/notifier"
+	notifieri "gitlab.com/gitlab-merge-tool/glmt/internal/notifier/impl"
 	teami "gitlab.com/gitlab-merge-tool/glmt/internal/team/impl"
 
 	"github.com/rs/zerolog"
@@ -167,10 +168,14 @@ func createCore(dryRun bool, out io.StringWriter, cfg *config.Config) (*glmt.Cor
 	}
 
 	nfyCfg := cfg.Notifier
-	var n glmt.Notifier
-	if nfyCfg.SlackWebHook.URL != "" {
-		n = notifier.NewSlackWebHookNotifier(nfyCfg.SlackWebHook.URL, nfyCfg.SlackWebHook.User, nfyCfg.SlackWebHook.Message)
+	var ns []notifier.Notifier
+	if nfyCfg.SlackWebHook.Enabled {
+		ns = append(ns, notifieri.NewSlackWebHookNotifier(nfyCfg.SlackWebHook))
 	}
+	if nfyCfg.Telegram.Enabled {
+		ns = append(ns, notifieri.NewTelegramNotifier(nfyCfg.Telegram))
+	}
+	n := notifieri.NewMultiNotifier(ns...)
 
 	mrCfg := cfg.Mentioner
 	ts, err := teami.NewTeamSource(mrCfg.TeamFileSource)
