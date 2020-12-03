@@ -8,6 +8,7 @@ still flexible to cover many use cases for different teams.
 * Creating MR form command line
 * MR title and description with support of templates
 * Team mentioning
+* Slack and telegram notificationss
 * View list of MR's waiting for your approval (coming soon)
 
 ## Usage
@@ -154,10 +155,7 @@ Also there is predefined functions for templates:
 
 ## Notifications
 
-GLMT can notify your team about created MR. Currently only slack notifications through webhook messages are supported.
-
-`notifier.slack_web_hook`  "": { // Notification parameters
-    "": {
+GLMT can notify your team about created MR. Currently slack (through webhook messages) and telegram notifications are supported. Notification message also support message templating.
 
 ## Mentions
 
