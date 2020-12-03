@@ -179,6 +179,7 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 		ta[TmpVarTitle] = t
 		ta[TmpVarDescription] = d
 		ta[TmpVarMRURL] = gmr.URL
+		ta[TmpVarMRChangesCount] = gmr.ChangesCount
 
 		err = c.notifier.Send(ctx, ta, params.NotificationMessage, ms)
 		if err != nil {

@@ -21,7 +21,12 @@ type CreateMRResponse struct {
 	IID       int64     `json:"iid"`
 	ProjectID int64     `json:"project_id"`
 	CreatedAt time.Time `json:"created_at"`
-	URL       string    `json:"url"`
+	URL       string    `json:"web_url"`
+	// ChangesCount shows how many changes in MR
+	// Note: the value in the response is a string, not an integer. This is because when an MR
+	// has too many changes to display and store, it will be capped at 1,000. In that case,
+	// the API will return the string "1000+" for the changes count.
+	ChangesCount string `json:"changes_count"`
 }
 
 type GitlabError struct {

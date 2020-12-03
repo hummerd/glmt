@@ -15,6 +15,7 @@ const (
 	TmpVarMRURL                = "MergeRequestURL"
 	TmpVarGitlabMentions       = "GitlabMentions"
 	TmpVarNotificationMentions = "NotificationMentions"
+	TmpVarMRChangesCount       = "ChangesCount"
 )
 
 func getTextArgs(branch, projectName string, params CreateMRParams, members []*team.Member) map[string]string {

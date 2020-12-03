@@ -71,8 +71,8 @@ Config example:
 ```jsonc
 {
   "gitlab": { // GitLab parameters
-  	"url": "https://yourgitlab.com",
-  	"token": "XXX" // You can get one on https://YOURGITLAB.com/profile/personal_access_tokens page
+    "url": "https://yourgitlab.com",
+    "token": "XXX" // You can get one on https://YOURGITLAB.com/profile/personal_access_tokens page
   },
   "mr": { // Merge Request parameters
     "branch_regexp": "(?P<TaskType>.*)/(?P<Task>.*)/(?P<BranchDescription>.*)",
@@ -137,10 +137,11 @@ as https://golang.org/pkg/text/template/. In template you can specify predefined
 * GitlabMentions - mentions added to MR (uses username from team file, it should be gitlab username), see [Mentions](#Mentions)
 
 Variables available for notification (previous variables are also available):
- * Title - merge request title
- * Description - merge request description
- * MergeRequestURL - merge request URL
- * NotificationMentions - mentions for notification (uses user names apropriate for this notificator), see [Mentions](#Mentions)
+* Title - merge request title
+* Description - merge request description
+* MergeRequestURL - merge request URL
+* NotificationMentions - mentions for notification (uses user names apropriate for this notificator), see [Mentions](#Mentions)
+* ChangesCount - string with changes count for this MR
 
 Additionally you can use any regexp group name from `branch_regexp` in description of title templates.
 If `title` not specified, current branch name will be used as title. If `description` not specified
@@ -150,6 +151,13 @@ Also there is predefined functions for templates:
 * humanizeText - capitalize first character and replaces "-" and "_" with space
 * upper - change letters to upper case
 * lower - change letters to lower case
+
+## Notifications
+
+GLMT can notify your team about created MR. Currently only slack notifications through webhook messages are supported.
+
+`notifier.slack_web_hook`  "": { // Notification parameters
+    "": {
 
 ## Mentions
 
@@ -167,20 +175,20 @@ Team file has following structure:
 {
   "members": [
     {
-  	  "username": "john",                   // Gitlab's username (without @)
-	    "owns_projects": ["group/project1"],  // Project's name, owned by John
-	    "is_active": true,                    // Is John active at current moment (you can seet it to false for vacation time)
-	    "names": {                            // Names for different notification channels
-	  	  "slack_member_id": "AABBXX"
-	    }
+      "username": "john",                   // Gitlab's username (without @)
+      "owns_projects": ["group/project1"],  // Project's name, owned by John
+      "is_active": true,                    // Is John active at current moment (you can set it to false for vacation time)
+      "names": {                            // Names for different notification channels
+        "slack_member_id": "AABBXX"
+      }
     },
     {
-  	  "username": "nick",
-	    "owns_projects": ["group/project2"],
-	    "is_active": true,
-	    "names": {
-	  	  "slack_member_id": "CCDDXX"
-	    }
+      "username": "nick",
+      "owns_projects": ["group/project2"],
+      "is_active": true,
+      "names": {
+        "slack_member_id": "CCDDXX"
+      }
     }
     ...
   ]

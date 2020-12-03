@@ -73,8 +73,6 @@ func (gl *HTTPGitLab) CreateMR(ctx context.Context, req gitlab.CreateMRRequest) 
 		return resp, fmt.Errorf("can not decode response from gitlab's create MR: %w", err)
 	}
 
-	resp.URL = createMRURL(gl.host, req.Project, resp.IID)
-
 	return resp, nil
 }
 
@@ -136,8 +134,4 @@ func createHTTPRequest(ctx context.Context, token, host string, req gitlab.Creat
 	hReq.Header.Set("Private-Token", token)
 
 	return hReq, nil
-}
-
-func createMRURL(host, project string, iid int64) string {
-	return fmt.Sprintf("%s/%s/-/merge_requests/%d", host, project, iid)
 }

@@ -40,6 +40,10 @@ func (gl *DryRunGitLab) CreateMR(ctx context.Context, req gitlab.CreateMRRequest
 	}, nil
 }
 
+func createMRURL(host, project string, iid int64) string {
+	return fmt.Sprintf("%s/%s/-/merge_requests/%d", host, project, iid)
+}
+
 func (gl *DryRunGitLab) CurrentUser(ctx context.Context) (gitlab.UserResponse, error) {
 	return gitlab.UserResponse{}, nil
 }
