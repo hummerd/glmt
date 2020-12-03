@@ -21,6 +21,11 @@ import (
 	"gitlab.com/gitlab-merge-tool/glmt/internal/templating"
 )
 
+var (
+	Version     string
+	VersionDate string
+)
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }

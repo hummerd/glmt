@@ -46,8 +46,18 @@ func main() {
 	createFlags.StringP("title", "t", "", "Merge Request's title (template variables can be used in title)")
 	createFlags.StringP("description", "d", "", "Merge Request's description (template variables can be used in description)")
 	createFlags.StringP("notification_message", "n", "", "Additional notification message")
-
 	rootCmd.AddCommand(cmdCreate)
+
+	var cmdVersion = &cobra.Command{
+		Use:   "version",
+		Short: "Show GLMT version",
+		Long:  `...`,
+		Run: func(cmd *cobra.Command, args []string) {
+			showVersion(cmd, logger, out)
+		},
+	}
+	rootCmd.AddCommand(cmdVersion)
+
 	_ = rootCmd.Execute()
 }
 

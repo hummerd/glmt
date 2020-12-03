@@ -2,15 +2,25 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"regexp"
+	"runtime"
+	"strconv"
+	"time"
 
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 
 	"gitlab.com/gitlab-merge-tool/glmt/internal/glmt"
 )
+
+func showVersion(cmd *cobra.Command, logger zerolog.Logger, out io.StringWriter) {
+	vd, _ := strconv.ParseInt(glmt.VersionDate, 10, 64)
+	v := fmt.Sprintf("glmt ver: %s from %v (%s)\n", glmt.Version, time.Unix(vd, 0), runtime.Version())
+	_, _ = out.WriteString(v)
+}
 
 func createMR(cmd *cobra.Command, logger zerolog.Logger, out io.StringWriter) {
 	flags := cmd.Flags()
