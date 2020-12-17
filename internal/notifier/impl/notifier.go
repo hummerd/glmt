@@ -44,7 +44,7 @@ func (mn *MultiNotifier) Send(
 func getMentions(mentions []*team.Member, memberKey string, format string) string {
 	ms := make([]string, 0, len(mentions))
 	for _, m := range mentions {
-		n := m.Names[memberKeyTelegram]
+		n := m.Names[memberKey]
 		if n != "" {
 			ms = append(ms, fmt.Sprintf(format, n))
 		}
