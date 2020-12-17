@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/rs/zerolog/log"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/notifier"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/team"
 )
@@ -36,6 +37,11 @@ func (mn *MultiNotifier) Send(
 		if err != nil {
 			return fmt.Errorf("multi send: %T: %w", n, err)
 		}
+		log.Ctx(ctx).Debug().
+			Str("add", add).
+			Interface("args", args).
+			Interface("mentions", mentions).
+			Msgf("sent notification with %T", n)
 	}
 
 	return nil
