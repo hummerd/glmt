@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/rs/zerolog/log"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/notifier"
 	"gitlab.com/gitlab-merge-tool/glmt/internal/team"
+
+	"github.com/rs/zerolog/log"
 )
 
 const (

@@ -51,12 +51,11 @@ func NewGLMT(
 }
 
 type Core struct {
-	git             Git
-	gitLab          gitlab.GitLab
-	notifier        notifier.Notifier
-	teamSource      team.TeamFileSource
-	currentUsername string
-	hooks           hooks.Runner
+	git        Git
+	gitLab     gitlab.GitLab
+	notifier   notifier.Notifier
+	teamSource team.TeamFileSource
+	hooks      hooks.Runner
 }
 
 type CreateMRParams struct {
@@ -99,7 +98,7 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 		return mr, err
 	}
 
-	cu, err := c.currentUser(ctx)
+	cu, err := c.gitLab.CurrentUser(ctx)
 	if err != nil {
 		return mr, err
 	}
@@ -111,7 +110,7 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 			return mr, err
 		}
 
-		ms = Mentions(tm, cu, p, params.MentionsCount)
+		ms = Mentions(tm, cu.Username, p, params.MentionsCount)
 	}
 
 	ta := getTextArgs(br, p, params, ms)
@@ -140,7 +139,7 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 		Branch:   br,
 		Project:  p,
 		Remote:   r,
-		Username: cu,
+		Username: cu.Username,
 		// This value will be set in after hook.
 		MergeRequestURL: "",
 	}
@@ -163,6 +162,7 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 		Description:        d,
 		Squash:             params.Squash,
 		RemoveSourceBranch: params.RemoveBranch,
+		AssigneeID:         cu.ID,
 	})
 	if err != nil {
 		return mr, err
@@ -198,20 +198,6 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 	}
 
 	return mr, err
-}
-
-func (c *Core) currentUser(ctx context.Context) (string, error) {
-	if c.currentUsername != "" {
-		return c.currentUsername, nil
-	}
-
-	cu, err := c.gitLab.CurrentUser(ctx)
-	if err != nil {
-		return "", err
-	}
-
-	c.currentUsername = cu.Username
-	return c.currentUsername, nil
 }
 
 func projectFromRemote(rem string) (string, error) {

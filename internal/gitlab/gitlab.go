@@ -14,6 +14,7 @@ type CreateMRRequest struct {
 	Description        string `json:"description"`
 	Squash             bool   `json:"squash"`
 	RemoveSourceBranch bool   `json:"remove_source_branch"`
+	AssigneeID         int    `json:"assignee_id"`
 }
 
 type CreateMRResponse struct {

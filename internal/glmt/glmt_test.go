@@ -102,6 +102,7 @@ func TestCreateMR(t *testing.T) {
 					TargetBranch:       cp.TargetBranch,
 					RemoveSourceBranch: cp.RemoveBranch,
 					Squash:             cp.Squash,
+					AssigneeID:         123,
 				}
 
 				if !reflect.DeepEqual(exp, arg) {
