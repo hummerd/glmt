@@ -38,6 +38,8 @@ func createMR(cmd *cobra.Command, logger zerolog.Logger, out io.StringWriter) {
 	logger = logger.Level(ll)
 	ctx := logger.WithContext(context.Background())
 
+	logger.Debug().Interface("config", cfg).Msg("final config")
+
 	dryRun, err := flags.GetBool("dryrun")
 	if err != nil {
 		_, _ = out.WriteString("Failed to parse dryrun: " + err.Error() + "\n")

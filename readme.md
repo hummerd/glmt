@@ -71,6 +71,7 @@ Or you can specify path to config file with `-c` flag.
 Config example:
 ```jsonc
 {
+  "base": "https://somepath.com/baseconfig", // Path (local or url) to base config. All values from base config are overridden by local values
   "gitlab": { // GitLab parameters
     "url": "https://yourgitlab.com",
     "token": "XXX" // You can get one on https://YOURGITLAB.com/profile/personal_access_tokens page

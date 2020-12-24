@@ -3,13 +3,19 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
+	"net/http"
 	"os"
+	"strings"
 	"time"
 
+	"github.com/imdario/mergo"
 	"github.com/yosuke-furukawa/json5/encoding/json5"
 )
 
 type Config struct {
+	Base      string    `json:"base"`
 	GitLab    GitLab    `json:"gitlab"`
 	MR        MR        `json:"mr"`
 	Notifier  Notifier  `json:"notifier"`
@@ -63,9 +69,37 @@ type Telegram struct {
 }
 
 func LoadConfig(path string) (*Config, error) {
-	f, err := os.Open(path)
+	c, err := loadFromFile(path)
 	if err != nil {
 		return nil, err
+	}
+
+	if c.Base != "" {
+		var bc *Config
+		if strings.HasPrefix(c.Base, "http://") ||
+			strings.HasPrefix(c.Base, "https://") {
+			bc, err = loadFromHttp(c.Base)
+		} else {
+			bc, err = loadFromFile(c.Base)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		err = mergo.Merge(c, bc)
+		if err != nil {
+			return nil, fmt.Errorf("failed to merge config: %w", err)
+		}
+	}
+
+	return c, nil
+}
+
+func loadFromFile(path string) (*Config, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open config: %w", err)
 	}
 
 	defer f.Close()
@@ -73,9 +107,26 @@ func LoadConfig(path string) (*Config, error) {
 	var c Config
 	err = json5.NewDecoder(f).Decode(&c)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to decode config: %w", err)
+	}
+	return &c, nil
+}
+
+func loadFromHttp(url string) (*Config, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("bad response from config source: " + resp.Status)
+	}
+
+	var c Config
+	err = json5.NewDecoder(resp.Body).Decode(&c)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode config: %w", err)
+	}
 	return &c, nil
 }
 

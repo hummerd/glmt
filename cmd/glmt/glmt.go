@@ -96,13 +96,13 @@ func finalConfig(flags *pflag.FlagSet) (*config.Config, error) {
 	} else {
 		cfg, err = config.LoadConfig(cp)
 		if err != nil {
-			return nil, errors.New("can not read config: " + err.Error())
+			return nil, fmt.Errorf("can not read config: %w", err)
 		}
 	}
 
 	err = applyFlags(flags, cfg)
 	if err != nil {
-		return nil, errors.New("can not parse flags: " + err.Error())
+		return nil, fmt.Errorf("can not parse flags: %w", err)
 	}
 
 	return cfg, nil
