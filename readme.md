@@ -113,7 +113,7 @@ Config example:
     // Before contains commands that will be executed before MR creation.
     "before": {
       "git up to date": [
-        "sh", "-c", "git status | grep 'Your branch is up to date with'"
+        "sh", "-c", "git status | grep 'Your branch is up to date with\\|nothing to commit'"
       ]
     },
     // After contains commands that will be executed after MR creation.
