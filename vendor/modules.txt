@@ -62,7 +62,8 @@ github.com/go-git/go-git/v5/utils/merkletrie/internal/frame
 github.com/go-git/go-git/v5/utils/merkletrie/noder
 # github.com/gorilla/websocket v1.4.2
 github.com/gorilla/websocket
-# github.com/imdario/mergo v0.3.9
+# github.com/imdario/mergo v0.3.11
+## explicit
 github.com/imdario/mergo
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
