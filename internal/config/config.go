@@ -29,12 +29,13 @@ type GitLab struct {
 }
 
 type MR struct {
-	BranchRegexp       string `json:"branch_regexp"`
-	Title              string `json:"title"`
-	Description        string `json:"description"`
-	TargetBranch       string `json:"target_branch"`
-	Squash             bool   `json:"squash"`
-	RemoveSourceBranch bool   `json:"remove_source_branch"`
+	BranchRegexp       string   `json:"branch_regexp"`
+	Title              string   `json:"title"`
+	Description        string   `json:"description"`
+	TargetBranch       string   `json:"target_branch"`
+	Squash             bool     `json:"squash"`
+	RemoveSourceBranch bool     `json:"remove_source_branch"`
+	LabelVars          []string `json:"label_vars"`
 }
 
 type Notifier struct {

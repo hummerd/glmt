@@ -79,11 +79,12 @@ func TestCreateMR(t *testing.T) {
 	}
 
 	cp := CreateMRParams{
-		DescriptionTemplate: "Merge feature {{.Task}} \"{{humanizeText .BranchDescription}}\" into {{.TargetBranchName}}",
+		DescriptionTemplate: "Merge {{.TaskType}} {{.Task}} \"{{humanizeText .BranchDescription}}\" into {{.TargetBranchName}}",
 		TitleTemplate:       "{{.Task}} {{humanizeText .BranchDescription}}",
 		RemoveBranch:        true,
 		Squash:              true,
 		TargetBranch:        "develop",
+		LabelVars:           []string{"TaskType"},
 		BranchRegexp:        regexp.MustCompile("(?P<TaskType>.*)/(?P<Task>.*)/(?P<BranchDescription>.*)"),
 	}
 
@@ -103,6 +104,7 @@ func TestCreateMR(t *testing.T) {
 					RemoveSourceBranch: cp.RemoveBranch,
 					Squash:             cp.Squash,
 					AssigneeID:         123,
+					Labels:             "feature",
 				}
 
 				if !reflect.DeepEqual(exp, arg) {

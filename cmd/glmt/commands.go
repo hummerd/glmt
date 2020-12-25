@@ -73,6 +73,7 @@ func createMR(cmd *cobra.Command, logger zerolog.Logger, out io.StringWriter) {
 		RemoveBranch:        cfg.MR.RemoveSourceBranch,
 		NotificationMessage: na,
 		MentionsCount:       cfg.Mentioner.MentionsCount,
+		LabelVars:           cfg.MR.LabelVars,
 	}
 
 	mr, err := core.CreateMR(ctx, params)

@@ -78,6 +78,7 @@ Config example:
   },
   "mr": { // Merge Request parameters
     "branch_regexp": "(?P<TaskType>.*)/(?P<Task>.*)/(?P<BranchDescription>.*)",
+    "label_vars": ["TaskType"],
     "title": "{{.Task}} {{humanizeText .BranchDescription}}", // MR's title, can be template
     "description": "Merge feature {{.Task}} \"{{humanizeText .BranchDescription}}\" into {{.TargetBranchName}}\n{{.GitlabMentions}}", // MR's description, can be template
     "target_branch": "develop",
