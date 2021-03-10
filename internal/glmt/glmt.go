@@ -67,6 +67,7 @@ type CreateMRParams struct {
 	RemoveBranch        bool
 	NotificationMessage string
 	MentionsCount       int
+	LabelVars           []string
 }
 
 type MergeRequest struct {
@@ -140,6 +141,9 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 		return mr, fmt.Errorf("hooks precondition failed: %w", err)
 	}
 
+	ta[TmpVarTitle] = t
+	ta[TmpVarDescription] = d
+
 	log.Ctx(ctx).Debug().
 		Interface("context", ta).
 		Str("title", t).
@@ -155,6 +159,7 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 		Squash:             params.Squash,
 		RemoveSourceBranch: params.RemoveBranch,
 		AssigneeID:         cu.ID,
+		Labels:             labelsFrom(ta, params.LabelVars),
 	})
 	if err != nil {
 		return mr, err
@@ -188,6 +193,21 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 	}
 
 	return mr, err
+}
+
+func labelsFrom(ta map[string]string, labelVars []string) string {
+	labels := make([]string, 0, len(labelVars))
+
+	for _, lv := range labelVars {
+		val, ok := ta[lv]
+		if !ok {
+			continue
+		}
+
+		labels = append(labels, val)
+	}
+
+	return strings.Join(labels, ",")
 }
 
 func projectFromRemote(rem string) (string, error) {

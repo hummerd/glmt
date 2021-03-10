@@ -56,7 +56,6 @@ func (h Hooks) run(
 	params hooks.Params,
 ) (err error) {
 	env := params.Env()
-	fmt.Println(env)
 
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithTimeout(ctx, h.timeout)
