@@ -26,7 +26,8 @@ func createMR(cmd *cobra.Command, logger zerolog.Logger, out io.StringWriter) {
 	flags := cmd.Flags()
 	cfg, err := finalConfig(flags)
 	if err != nil {
-		panic(err)
+		_, _ = out.WriteString("Failed to read config: " + err.Error() + "\n")
+		os.Exit(1)
 	}
 
 	ll, err := parseLogLevel(flags)

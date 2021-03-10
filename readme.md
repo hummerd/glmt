@@ -8,7 +8,7 @@ still flexible to cover many use cases for different teams.
 * Creating MR form command line
 * MR title and description with support of templates
 * Team mentioning
-* Slack and telegram notificationss
+* Slack and telegram notifications
 * View list of MR's waiting for your approval (coming soon)
 
 ## Usage
@@ -108,8 +108,9 @@ Config example:
     "team_file_source": "PATH_TO/glmt-team.config", // Path (can be http url) to team file, see info about "Team file"
     "count": 2 // Number of project members to be mentioned in MR
   },
-  // There are several environment variables available in hooks:
-  // GLMT_REMOTE, GLMT_BRANCH, GLMT_MR_URL, GLMT_PROJECT, GLMT_USERNAME.
+  // Hooks are commands executed before or after creating MR.
+  // All template variables are available as environment variables in hooks in form of GLMT_{Upper case of template variable name}
+  // (example: GLMT_REMOTE, GLMT_BRANCH, GLMT_MR_URL, GLMT_PROJECT, GLMT_USERNAME).
   "hooks": {
     // Before contains commands that will be executed before MR creation.
     "before": {
@@ -120,7 +121,7 @@ Config example:
     // After contains commands that will be executed after MR creation.
     "after": {
       "print mr url": [
-        "sh", "-c", "echo MR: $GLMT_MR_URL"
+        "sh", "-c", "echo MR: $GLMT_MERGEREQUESTURL"
       ]
     },
     // Timeout of all commands in the set.
@@ -135,8 +136,10 @@ Title and Description and other fields can be static string or it can be templat
 as https://golang.org/pkg/text/template/. In template you can specify predefined variables:
 * ProjectName - project name (path extracted from git remote)
 * BranchName - current branch name
+* Remote - remote for current branch
 * TargetBranchName - target branch name (from config or flag)
 * GitlabMentions - mentions added to MR (uses username from team file, it should be gitlab username), see [Mentions](#Mentions)
+* Username - gitlab user name
 
 Variables available for notification (previous variables are also available):
 * Title - merge request title

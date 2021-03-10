@@ -15,5 +15,8 @@ test:
 lint:
 	golangci-lint run
 
+install:
+	go install $(LDFLAGS) ./cmd/glmt
+
 clean:
 	rm glmt

@@ -113,7 +113,7 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 		ms = Mentions(tm, cu.Username, p, params.MentionsCount)
 	}
 
-	ta := getTextArgs(br, p, params, ms)
+	ta := getTextArgs(br, p, r, cu.Username, params, ms)
 
 	var t string
 	if params.TitleTemplate != "" {
@@ -135,15 +135,7 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 		d = "Merge " + br + " into " + params.TargetBranch
 	}
 
-	hp := hooks.Params{
-		Branch:   br,
-		Project:  p,
-		Remote:   r,
-		Username: cu.Username,
-		// This value will be set in after hook.
-		MergeRequestURL: "",
-	}
-	err = c.hooks.RunBefore(ctx, hp)
+	err = c.hooks.RunBefore(ctx, hooks.Params(ta))
 	if err != nil {
 		return mr, fmt.Errorf("hooks precondition failed: %w", err)
 	}
@@ -168,8 +160,12 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 		return mr, err
 	}
 
-	hp.MergeRequestURL = gmr.URL
-	err = c.hooks.RunAfter(ctx, hp)
+	ta[TmpVarTitle] = t
+	ta[TmpVarDescription] = d
+	ta[TmpVarMRURL] = gmr.URL
+	ta[TmpVarMRChangesCount] = gmr.ChangesCount
+
+	err = c.hooks.RunAfter(ctx, hooks.Params(ta))
 	if err != nil {
 		return mr, fmt.Errorf("hooks postcondition failed: %w", err)
 	}
@@ -181,11 +177,6 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 	mr.URL = gmr.URL
 
 	if c.notifier != nil {
-		ta[TmpVarTitle] = t
-		ta[TmpVarDescription] = d
-		ta[TmpVarMRURL] = gmr.URL
-		ta[TmpVarMRChangesCount] = gmr.ChangesCount
-
 		err = c.notifier.Send(ctx, ta, params.NotificationMessage, ms)
 		if err != nil {
 			err = gerr.NewNestedError(ErrNotification, err)
@@ -194,7 +185,6 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 		log.Ctx(ctx).Debug().
 			Interface("context", ta).
 			Msg("notification")
-
 	}
 
 	return mr, err

@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"time"
 
@@ -23,7 +24,7 @@ type Hooks struct {
 }
 
 func NewHooks(cfg config.Hooks, stdout io.Writer, stderr io.Writer) *Hooks {
-	const defaultTimeout = 5 * time.Second
+	const defaultTimeout = 5 * time.Minute
 
 	timeout := time.Duration(cfg.Timeout)
 	if timeout == 0 {
@@ -55,6 +56,7 @@ func (h Hooks) run(
 	params hooks.Params,
 ) (err error) {
 	env := params.Env()
+	fmt.Println(env)
 
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithTimeout(ctx, h.timeout)
@@ -62,7 +64,7 @@ func (h Hooks) run(
 
 	for name, cmd := range commands {
 		cmdProc := exec.CommandContext(ctx, cmd[0], cmd[1:]...)
-		cmdProc.Env = env
+		cmdProc.Env = append(os.Environ(), env...)
 		cmdProc.Stdout = h.stdout
 		cmdProc.Stderr = h.stderr
 

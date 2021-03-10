@@ -51,6 +51,8 @@ func TestTextArgs(t *testing.T) {
 		TmpVarBranchName:       "feature/TASK-123/some-description",
 		TmpVarTargetBranchName: "develop",
 		TmpVarGitlabMentions:   "@test",
+		TmpVarRemote:           "origin",
+		TmpVarUsername:         "xxx",
 
 		"Task":              "TASK-123",
 		"TaskType":          "feature",
@@ -65,7 +67,7 @@ func TestTextArgs(t *testing.T) {
 	members := []*team.Member{{
 		Username: "test",
 	}}
-	ta := getTextArgs(expTa["BranchName"], expTa["ProjectName"], params, members)
+	ta := getTextArgs(expTa["BranchName"], expTa["ProjectName"], "origin", "xxx", params, members)
 
 	if !reflect.DeepEqual(expTa, ta) {
 		t.Fatalf("expected ta: %+v, got %+v", expTa, ta)

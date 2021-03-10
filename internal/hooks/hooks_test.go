@@ -10,7 +10,7 @@ func TestHookParamsEnv(t *testing.T) {
 	const exp = "GLMT_BRANCH=master"
 
 	params := hooks.Params{
-		Branch: "master",
+		"Branch": "master",
 	}
 
 	env := params.Env()

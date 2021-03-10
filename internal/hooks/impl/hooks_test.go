@@ -16,7 +16,7 @@ import (
 func TestHooks_RunAfter(t *testing.T) {
 	h := impl.NewHooks(config.Hooks{
 		AfterCommands: map[string][]string{
-			"test": []string{"sh"},
+			"test": {"sh"},
 		},
 	}, nil, nil)
 
@@ -32,7 +32,7 @@ func TestHooks_RunBefore_Output(t *testing.T) {
 	var buf bytes.Buffer
 	h := impl.NewHooks(config.Hooks{
 		BeforeCommands: map[string][]string{
-			"test": []string{
+			"test": {
 				"echo", "Hello", "World",
 			},
 		},
@@ -50,7 +50,7 @@ func TestHooks_RunBefore_Output(t *testing.T) {
 func TestHooks_RunBefore_Fail(t *testing.T) {
 	h := impl.NewHooks(config.Hooks{
 		BeforeCommands: map[string][]string{
-			"test": []string{"this-command-should-not-exists"},
+			"test": {"this-command-should-not-exists"},
 		},
 	}, nil, nil)
 
@@ -66,14 +66,14 @@ func TestHooks_RunBefore_Env(t *testing.T) {
 	var buf bytes.Buffer
 	h := impl.NewHooks(config.Hooks{
 		BeforeCommands: map[string][]string{
-			"test": []string{
+			"test": {
 				"sh", "-c", "echo $GLMT_BRANCH",
 			},
 		},
 	}, &buf, &buf)
 
 	err := h.RunBefore(context.Background(), hooks.Params{
-		Branch: "master",
+		"Branch": "master",
 	})
 	switch {
 	case err != nil:
@@ -88,7 +88,7 @@ func TestHooks_RunAfter_Deadline(t *testing.T) {
 	var buf bytes.Buffer
 	h := impl.NewHooks(config.Hooks{
 		AfterCommands: map[string][]string{
-			"test": []string{
+			"test": {
 				"sleep", "1",
 			},
 		},

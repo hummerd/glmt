@@ -9,6 +9,7 @@ import (
 const (
 	TmpVarProjectName          = "ProjectName"
 	TmpVarBranchName           = "BranchName"
+	TmpVarRemote               = "Remote"
 	TmpVarTargetBranchName     = "TargetBranchName"
 	TmpVarTitle                = "Title"
 	TmpVarDescription          = "Description"
@@ -16,9 +17,10 @@ const (
 	TmpVarGitlabMentions       = "GitlabMentions"
 	TmpVarNotificationMentions = "NotificationMentions"
 	TmpVarMRChangesCount       = "ChangesCount"
+	TmpVarUsername             = "Username"
 )
 
-func getTextArgs(branch, projectName string, params CreateMRParams, members []*team.Member) map[string]string {
+func getTextArgs(branch, projectName, remote, username string, params CreateMRParams, members []*team.Member) map[string]string {
 	r := map[string]string{}
 
 	gitlabMentions := make([]string, 0, len(members))
@@ -32,6 +34,8 @@ func getTextArgs(branch, projectName string, params CreateMRParams, members []*t
 		r[TmpVarBranchName] = branch
 		r[TmpVarTargetBranchName] = params.TargetBranch
 		r[TmpVarGitlabMentions] = strings.Join(gitlabMentions, ", ")
+		r[TmpVarRemote] = remote
+		r[TmpVarUsername] = username
 	}()
 
 	if params.BranchRegexp == nil {
