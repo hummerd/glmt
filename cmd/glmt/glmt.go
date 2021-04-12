@@ -32,6 +32,7 @@ func main() {
 	rootCmd.PersistentFlags().StringP("host", "a", "", "gitlab host")
 	rootCmd.PersistentFlags().BoolP("dryrun", "y", false, "dry run true only shows request to gitlab, but do not sends them")
 	rootCmd.PersistentFlags().StringP("log", "l", "info", "log level")
+	rootCmd.PersistentFlags().Bool("no_hooks", false, "do not run hooks")
 
 	var cmdCreate = &cobra.Command{
 		Use:   "create",

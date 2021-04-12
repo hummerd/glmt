@@ -65,6 +65,12 @@ func createMR(cmd *cobra.Command, logger zerolog.Logger, out io.StringWriter) {
 		os.Exit(1)
 	}
 
+	nh, err := flags.GetBool("no_hooks")
+	if err != nil {
+		_, _ = out.WriteString("Failed to parse no_hooks: " + err.Error() + "\n")
+		os.Exit(1)
+	}
+
 	params := glmt.CreateMRParams{
 		TargetBranch:        cfg.MR.TargetBranch,
 		BranchRegexp:        br,
@@ -75,6 +81,7 @@ func createMR(cmd *cobra.Command, logger zerolog.Logger, out io.StringWriter) {
 		NotificationMessage: na,
 		MentionsCount:       cfg.Mentioner.MentionsCount,
 		LabelVars:           cfg.MR.LabelVars,
+		IgnoreHooks:         nh,
 	}
 
 	mr, err := core.CreateMR(ctx, params)

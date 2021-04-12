@@ -41,6 +41,7 @@ Flags:
   -a, --host string     gitlab host
   -l, --log string      log level (default "info")
   -k, --token string    gitlab API token
+  --no_hooks bool       do not run hooks
 
 Use "glmt [command] --help" for more information about a command.
 ```

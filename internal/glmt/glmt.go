@@ -68,6 +68,7 @@ type CreateMRParams struct {
 	NotificationMessage string
 	MentionsCount       int
 	LabelVars           []string
+	IgnoreHooks         bool
 }
 
 type MergeRequest struct {
@@ -136,9 +137,11 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 		d = "Merge " + br + " into " + params.TargetBranch
 	}
 
-	err = c.hooks.RunBefore(ctx, hooks.Params(ta))
-	if err != nil {
-		return mr, fmt.Errorf("hooks precondition failed: %w", err)
+	if !params.IgnoreHooks {
+		err = c.hooks.RunBefore(ctx, hooks.Params(ta))
+		if err != nil {
+			return mr, fmt.Errorf("hooks precondition failed: %w", err)
+		}
 	}
 
 	ta[TmpVarTitle] = t
@@ -170,9 +173,11 @@ func (c *Core) CreateMR(ctx context.Context, params CreateMRParams) (MergeReques
 	ta[TmpVarMRURL] = gmr.URL
 	ta[TmpVarMRChangesCount] = gmr.ChangesCount
 
-	err = c.hooks.RunAfter(ctx, hooks.Params(ta))
-	if err != nil {
-		return mr, fmt.Errorf("hooks postcondition failed: %w", err)
+	if !params.IgnoreHooks {
+		err = c.hooks.RunAfter(ctx, hooks.Params(ta))
+		if err != nil {
+			return mr, fmt.Errorf("hooks postcondition failed: %w", err)
+		}
 	}
 
 	mr.ID = gmr.ID
