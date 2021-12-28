@@ -186,6 +186,9 @@ func createCore(dryRun bool, out io.StringWriter, cfg *config.Config) (*glmt.Cor
 	if nfyCfg.Telegram.Enabled {
 		ns = append(ns, notifieri.NewTelegramNotifier(nfyCfg.Telegram))
 	}
+	if nfyCfg.MattermostWebHook.Enabled {
+		ns = append(ns, notifieri.NewMattermostWebHookNotifier(nfyCfg.MattermostWebHook))
+	}
 	n := notifieri.NewMultiNotifier(ns...)
 
 	mrCfg := cfg.Mentioner

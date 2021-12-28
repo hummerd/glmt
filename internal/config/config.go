@@ -39,8 +39,16 @@ type MR struct {
 }
 
 type Notifier struct {
-	SlackWebHook SlackWebHook `json:"slack_web_hook"`
-	Telegram     Telegram     `json:"telegram"`
+	SlackWebHook      SlackWebHook      `json:"slack_web_hook"`
+	Telegram          Telegram          `json:"telegram"`
+	MattermostWebHook MattermostWebHook `json:"mattermost_web_hook"`
+}
+
+type MattermostWebHook struct {
+	Enabled     bool   `json:"enabled"`
+	URL         string `json:"url"`
+	MessageTmpl string `json:"message"`
+	User        string `json:"user"`
 }
 
 type SlackWebHook struct {

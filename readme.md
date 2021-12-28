@@ -104,6 +104,11 @@ Config example:
       //
       // Also disable group privacy for the bot: https://core.telegram.org/bots#privacy-mode.
       "chat_id": "@BotFather"
+    },
+    "mattermost_web_hook": {
+      "enabled": true,
+      "url": "https://example.com/hooks/example_token",
+      "message": "@here\n{{.Description}}\n{{.MergeRequestURL}}"
     }
   },
   "mentioner": {
