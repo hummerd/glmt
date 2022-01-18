@@ -233,9 +233,8 @@ func projectFromRemote(rem string) (string, error) {
 	}
 
 	if p != "" {
-		if strings.HasSuffix(p, ".git") {
-			p = p[:len(p)-4]
-		}
+		p = strings.TrimSuffix(p, ".git")
+
 		return p, nil
 	}
 
